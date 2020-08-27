@@ -7,6 +7,7 @@ import org.optaplanner.core.api.score.ScoreManager;
 import org.optaplanner.core.api.solver.SolverJob;
 import org.optaplanner.core.api.solver.SolverManager;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -76,7 +77,7 @@ public class SolverController {
     }	
 	
 	@ApiOperation("Explain the solution")
-    @PostMapping("/explain")
+    @GetMapping("/explain")
 	public String explain() {
 		return scoreManager.explainScore(solution);
 	}
