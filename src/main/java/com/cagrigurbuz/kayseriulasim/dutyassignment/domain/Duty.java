@@ -104,4 +104,10 @@ public class Duty {
 	public boolean employeeIsInSameRegion() {
 		return employee.getRegion() == getRegion();
 	}
+
+	@Override
+	public String toString() {
+		return "Duty [id=" + id + ", name=" + name + ", region=" + region + ", taskCount=" + taskCount + ", employee="
+				+ employee + ", startDateTime=" + startDateTime + ", endDateTime=" + endDateTime + "]";
+	}
 }
