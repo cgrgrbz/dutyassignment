@@ -1,16 +1,21 @@
 package com.cagrigurbuz.kayseriulasim.dutyassignment.domain;
 
-import java.time.LocalTime;
-
+import java.time.LocalDateTime;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import org.optaplanner.core.api.domain.entity.PlanningEntity;
+import org.optaplanner.core.api.domain.lookup.PlanningId;
+import org.optaplanner.core.api.domain.variable.PlanningVariable;
+
 @Entity
+@PlanningEntity
 public class Duty {
 	
+	@PlanningId
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
@@ -19,27 +24,25 @@ public class Duty {
 	private int taskCount;
 	
 	@ManyToOne
+	@PlanningVariable(valueRangeProviderRefs = "employeeRange", nullable = true)
 	private Employee employee;
 	
-	private LocalTime startTime, endTime;
-	private int startDayIndex, endDayIndex;
+	private LocalDateTime startDateTime, endDateTime;
 	
 	public Duty() {
 		
 	}
 
-	public Duty(Long id, String name, String region, int taskCount, Employee employee, LocalTime startTime,
-			LocalTime endTime, int startDayIndex, int endDayIndex) {
+	public Duty(Long id, String name, String region, int taskCount, Employee employee, LocalDateTime startDateTime,
+			LocalDateTime endDateTime) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.region = region;
 		this.taskCount = taskCount;
 		this.employee = employee;
-		this.startTime = startTime;
-		this.endTime = endTime;
-		this.startDayIndex = startDayIndex;
-		this.endDayIndex = endDayIndex;
+		this.startDateTime = startDateTime;
+		this.endDateTime = endDateTime;
 	}
 
 	public Long getId() {
@@ -82,36 +85,23 @@ public class Duty {
 		this.employee = employee;
 	}
 
-	public LocalTime getStartTime() {
-		return startTime;
+	public LocalDateTime getStartDateTime() {
+		return startDateTime;
 	}
 
-	public void setStartTime(LocalTime startTime) {
-		this.startTime = startTime;
+	public void setStartDateTime(LocalDateTime startDateTime) {
+		this.startDateTime = startDateTime;
 	}
 
-	public LocalTime getEndTime() {
-		return endTime;
+	public LocalDateTime getEndDateTime() {
+		return endDateTime;
 	}
 
-	public void setEndTime(LocalTime endTime) {
-		this.endTime = endTime;
+	public void setEndDateTime(LocalDateTime endDateTime) {
+		this.endDateTime = endDateTime;
 	}
-
-	public int getStartDayIndex() {
-		return startDayIndex;
+	
+	public boolean employeeIsInSameRegion() {
+		return employee.getRegion() == getRegion();
 	}
-
-	public void setStartDayIndex(int startDayIndex) {
-		this.startDayIndex = startDayIndex;
-	}
-
-	public int getEndDayIndex() {
-		return endDayIndex;
-	}
-
-	public void setEndDayIndex(int endDayIndex) {
-		this.endDayIndex = endDayIndex;
-	}
-
 }

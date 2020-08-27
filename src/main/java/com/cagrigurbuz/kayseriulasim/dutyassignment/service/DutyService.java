@@ -52,11 +52,8 @@ public class DutyService {
     	oldDuty.setName(newDuty.getName());
     	oldDuty.setRegion(newDuty.getRegion());
     	
-    	oldDuty.setEndDayIndex(newDuty.getEndDayIndex());
-    	oldDuty.setStartDayIndex(newDuty.getStartDayIndex());
-    	
-    	oldDuty.setStartTime(newDuty.getStartTime());
-    	oldDuty.setEndTime(newDuty.getEndTime());
+    	oldDuty.setStartDateTime(newDuty.getStartDateTime());
+    	oldDuty.setEndDateTime(newDuty.getEndDateTime());
         
         return dutyRepository.save(oldDuty);
     }
