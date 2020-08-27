@@ -29,6 +29,10 @@ public class ScheduleService {
     public Schedule addSchedule(Schedule schedule) {
     	return scheduleRepository.save(schedule);
     }
+    
+    public void clearSchedule() {
+    	scheduleRepository.deleteAll();
+    }
 	
     @Transactional
     public Schedule updateSchedule(Schedule schedule) {

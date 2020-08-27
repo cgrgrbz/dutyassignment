@@ -49,7 +49,7 @@ public class SolverController {
 	@ApiOperation("Solve for schedule")
 	@PostMapping("/solve")
 	public Schedule solve() {
-
+		
 		problem.setDutyList(dutyService.getDutyList());
 		problem.setEmployeeList(employeeService.getEmployeeList());
 
@@ -64,6 +64,9 @@ public class SolverController {
 		}
 
 		dutyService.updateDutyList(solution.getDutyList());
+		
+		//delete the previous schedule.. then save the new one.
+		scheduleService.clearSchedule();
 		
 		return scheduleService.addSchedule(solution);
 	}
