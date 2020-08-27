@@ -27,57 +27,49 @@ public class SolverController {
 
 	@Autowired
 	private SolverManager<Schedule, UUID> solverManager;
-	
+
 	@Autowired
 	private ScoreManager<Schedule> scoreManager;
-	
+
 	@Autowired
-	private EmployeeService	employeeService;
-	
+	private EmployeeService employeeService;
+
 	@Autowired
 	private DutyService dutyService;
-	
+
 	@Autowired
 	private ScheduleService scheduleService;
-	
+
 	UUID problemId = UUID.randomUUID();
+
+	Schedule problem = new Schedule();
+
 	Schedule solution = null;
-	
-//	@ApiOperation("Get the schedule")
-//    @GetMapping("/get")
-//    public String getSolution() {
-//		scoreManager.updateScore(solution);
-//        return scoreManager.explainScore(solution);
-//    }
-	
+
 	@ApiOperation("Solve for schedule")
-    @PostMapping("/solve")
-    public Schedule solve() {
+	@PostMapping("/solve")
+	public Schedule solve() {
 
+		problem.setDutyList(dutyService.getDutyList());
+		problem.setEmployeeList(employeeService.getEmployeeList());
 
-        Schedule problem = new Schedule();
-        problem.setDutyList(dutyService.getDutyList());
-        problem.setEmployeeList(employeeService.getEmployeeList());
-        
-                
-        // Submit the problem to start solving
-        SolverJob<Schedule, UUID> solverJob = solverManager.solve(problemId, problem);
-        
-        try {
-            // Wait until the solving ends
-            solution = solverJob.getFinalBestSolution();
-            scoreManager.updateScore(problem);
-        } catch (InterruptedException | ExecutionException e) {
-            throw new IllegalStateException("Solving failed.", e);
-        }
-        
-        scheduleService.addSchedule(solution);
+		SolverJob<Schedule, UUID> solverJob = solverManager.solve(problemId, problem);
 
-        return solution;
-    }	
-	
+		try {
+			// Wait until the solving ends
+			solution = solverJob.getFinalBestSolution();
+			scoreManager.updateScore(solution);
+		} catch (InterruptedException | ExecutionException e) {
+			throw new IllegalStateException("Solving failed.", e);
+		}
+
+		dutyService.updateDutyList(solution.getDutyList());
+		
+		return scheduleService.addSchedule(solution);
+	}
+
 	@ApiOperation("Explain the solution")
-    @GetMapping("/explain")
+	@GetMapping("/explain")
 	public String explain() {
 		return scoreManager.explainScore(solution);
 	}

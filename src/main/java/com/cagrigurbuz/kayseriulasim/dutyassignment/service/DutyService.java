@@ -44,7 +44,7 @@ public class DutyService {
     public Duty updateDuty(Duty duty) {
         
     	Duty newDuty = duty;
-
+    	
     	Duty oldDuty = dutyRepository
                 .findById(newDuty.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Duty entity with ID (" + newDuty.getId() + ") not found."));
@@ -54,8 +54,21 @@ public class DutyService {
     	
     	oldDuty.setStartDateTime(newDuty.getStartDateTime());
     	oldDuty.setEndDateTime(newDuty.getEndDateTime());
+    	
+    	oldDuty.setEmployee(newDuty.getEmployee());
+    	oldDuty.setTaskCount(newDuty.getTaskCount());
         
         return dutyRepository.save(oldDuty);
+    }
+    
+    @Transactional
+    public List<Duty> updateDutyList(List<Duty> dutyList) {
+        
+    	for (Duty duty: dutyList) {
+    		updateDuty(duty);
+    	}
+    	
+    	return dutyRepository.findAll();
     }
     
     @Transactional
