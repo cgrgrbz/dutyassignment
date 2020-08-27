@@ -1,0 +1,89 @@
+package com.cagrigurbuz.kayseriulasim.dutyassignment.service;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import javax.persistence.EntityNotFoundException;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.cagrigurbuz.kayseriulasim.dutyassignment.domain.Duty;
+import com.cagrigurbuz.kayseriulasim.dutyassignment.repository.DutyRepository;
+import com.cagrigurbuz.kayseriulasim.dutyassignment.utils.DutyListXLSXFileIO;
+
+
+@Service
+public class DutyService {
+
+	private final DutyRepository dutyRepository;
+	
+	private final DutyListXLSXFileIO dutyListXLSXFileIO;
+	
+    public DutyService(DutyRepository dutyRepository, DutyListXLSXFileIO dutyListXLSXFileIO) {
+		super();
+		this.dutyRepository = dutyRepository;
+		this.dutyListXLSXFileIO = dutyListXLSXFileIO;
+	}
+
+	@Transactional
+    public List<Duty> getDutyList() {
+        return dutyRepository.findAll();
+    }
+
+    @Transactional
+    public Duty addDuty(Duty duty) {
+    	return dutyRepository.save(duty);
+    }
+    
+    @Transactional
+    public Duty updateDuty(Duty duty) {
+        
+    	Duty newDuty = duty;
+
+    	Duty oldDuty = dutyRepository
+                .findById(newDuty.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Duty entity with ID (" + newDuty.getId() + ") not found."));
+    	
+    	oldDuty.setName(newDuty.getName());
+    	oldDuty.setRegion(newDuty.getRegion());
+    	
+    	oldDuty.setStartDateTime(newDuty.getStartDateTime());
+    	oldDuty.setEndDateTime(newDuty.getEndDateTime());
+        
+        return dutyRepository.save(oldDuty);
+    }
+    
+    @Transactional
+    public List<Duty> importDutyFromExcel(InputStream excelInputStream) throws IOException {
+    	
+        List<Duty> excelDutyList = dutyListXLSXFileIO.getDutyListFromExcelFile(excelInputStream);
+
+        final Set<String> addedDutySet = new HashSet<>();
+        
+        excelDutyList.stream().flatMap(duty -> {
+            if (addedDutySet.contains(duty.getName().toLowerCase())) {
+                // Duplicate Employee; already in the stream
+                return Stream.empty();
+            }
+            // Add employee to the stream
+            addedDutySet.add(duty.getName().toLowerCase());
+            return Stream.of(duty);
+        }).forEach(duty -> {
+            Duty oldDuty = dutyRepository.findDutyById(duty.getId());
+            if (oldDuty != null) {
+            	duty.setId(oldDuty.getId());
+                updateDuty(duty);
+            } else {
+                addDuty(duty);
+            }
+        });
+        
+        return getDutyList();
+    }
+    
+ }
