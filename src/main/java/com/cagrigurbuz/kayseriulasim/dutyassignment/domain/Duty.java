@@ -1,6 +1,8 @@
 package com.cagrigurbuz.kayseriulasim.dutyassignment.domain;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -28,7 +30,7 @@ public class Duty {
 	private Employee employee;
 	
 	private LocalDateTime startDateTime, endDateTime;
-	
+		
 	public Duty() {
 		
 	}
@@ -101,13 +103,18 @@ public class Duty {
 		this.endDateTime = endDateTime;
 	}
 	
-	public boolean employeeIsInSameRegion() {
-		return employee.getRegion() == getRegion();
-	}
-
 	@Override
 	public String toString() {
 		return "Duty [id=" + id + ", name=" + name + ", region=" + region + ", taskCount=" + taskCount + ", employee="
 				+ employee + ", startDateTime=" + startDateTime + ", endDateTime=" + endDateTime + "]";
 	}
+
+	public boolean employeeIsInSameRegion() {
+		return employee.getRegion() == getRegion();
+	}
+	
+	public Long dutyLengthInMinutes() {
+		return startDateTime.until(endDateTime, ChronoUnit.MINUTES);
+	}
+
 }
