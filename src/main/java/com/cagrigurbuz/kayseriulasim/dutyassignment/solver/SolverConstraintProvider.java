@@ -1,5 +1,6 @@
 package com.cagrigurbuz.kayseriulasim.dutyassignment.solver;
 
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
@@ -21,6 +22,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
         		requiredRegionOfEmployee(constraintFactory),
         		assignEveryDuty(constraintFactory),
         		noOverlappingDuties(constraintFactory),
+        		breakBetweenTwoConsecutiveDutyAtLeast12Hours(constraintFactory),
         };
 	}
 	
@@ -56,7 +58,16 @@ public class SolverConstraintProvider implements ConstraintProvider {
                         greaterThan(Duty::getEndDateTime, Duty::getStartDateTime))
                 .filter((duty, otherDuty) -> !Objects.equals(duty, otherDuty))
                 .penalize("No Overlapping Duties.", HardSoftScore.ofHard(100));
-                //.penalizeConfigurableLong("No Overlapping Duties.", (duty, otherDuty) -> otherDuty.dutyLengthInMinutes());
+    }
+    
+    Constraint breakBetweenTwoConsecutiveDutyAtLeast12Hours(ConstraintFactory constraintFactory) {
+        return getAssignedDutyConstraintStream(constraintFactory)
+                .join(Duty.class,
+                        equal(Duty::getEmployee),
+                        lessThan(Duty::getEndDateTime, Duty::getStartDateTime))
+                .filter((s1, s2) -> !Objects.equals(s1, s2))
+                .filter((s1, s2) -> s1.getEndDateTime().until(s2.getStartDateTime(), ChronoUnit.HOURS) < 12)
+                .penalize("At least 12 Hours break after the Duty.", HardSoftScore.ofSoft(100));
     }
     
 }
