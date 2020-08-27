@@ -2,11 +2,12 @@ package com.cagrigurbuz.kayseriulasim.dutyassignment.domain;
 
 import java.util.List;
 
-import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
+
 import org.optaplanner.core.api.domain.solution.PlanningEntityCollectionProperty;
 import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
@@ -23,11 +24,11 @@ public class Schedule {
 	private Long id;
 	
 	@ProblemFactCollectionProperty
+	@OneToMany
 	@ValueRangeProvider(id = "employeeRange")
-	@ElementCollection(targetClass=Employee.class)
 	private List<Employee> employeeList;
 
-	@ElementCollection(targetClass=Duty.class)
+	@OneToMany
 	@PlanningEntityCollectionProperty
 	private List<Duty> dutyList;
 	
@@ -68,4 +69,14 @@ public class Schedule {
 	public void setScore(HardSoftScore score) {
 		this.score = score;
 	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
+
+
 }
