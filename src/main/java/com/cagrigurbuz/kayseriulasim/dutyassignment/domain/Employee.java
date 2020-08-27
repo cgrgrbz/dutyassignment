@@ -5,9 +5,12 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
+import org.optaplanner.core.api.domain.lookup.PlanningId;
+
 @Entity
 public class Employee {
 	
+	@PlanningId
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
@@ -58,6 +61,11 @@ public class Employee {
 
 	public void setCode(String code) {
 		this.code = code;
+	}
+
+	@Override
+	public String toString() {
+		return "Employee [id=" + id + ", code=" + code + ", name=" + name + ", region=" + region + "]";
 	}
 
 }
