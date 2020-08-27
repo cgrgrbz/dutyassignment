@@ -2,6 +2,8 @@ package com.cagrigurbuz.kayseriulasim.dutyassignment.service;
 
 import java.util.List;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,4 +30,19 @@ public class ScheduleService {
     	return scheduleRepository.save(schedule);
     }
 	
+    @Transactional
+    public Schedule updateSchedule(Schedule schedule) {
+        
+    	Schedule newSchedule = schedule;
+
+    	Schedule oldSchedule = scheduleRepository
+                .findById(newSchedule.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Schedule entity with ID (" + newSchedule.getId() + ") not found."));
+    	
+    	oldSchedule.setDutyList(newSchedule.getDutyList());
+    	oldSchedule.setEmployeeList(newSchedule.getEmployeeList());
+    	oldSchedule.setScore(newSchedule.getScore());
+        
+        return scheduleRepository.save(oldSchedule);
+    }
 }
