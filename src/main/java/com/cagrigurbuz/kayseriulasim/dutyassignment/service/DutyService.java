@@ -51,12 +51,14 @@ public class DutyService {
     	
     	oldDuty.setName(newDuty.getName());
     	oldDuty.setRegion(newDuty.getRegion());
+    	oldDuty.setType(newDuty.getType());
     	
     	oldDuty.setStartDateTime(newDuty.getStartDateTime());
     	oldDuty.setEndDateTime(newDuty.getEndDateTime());
     	
     	oldDuty.setEmployee(newDuty.getEmployee());
-    	oldDuty.setTaskCount(newDuty.getTaskCount());
+
+    	oldDuty.setLoad(newDuty.getLoad());
         
         return dutyRepository.save(oldDuty);
     }

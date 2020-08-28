@@ -22,8 +22,9 @@ public class Duty {
     @GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	
-	private String name, region;
-	private int taskCount;
+	private String name, region, type;
+	
+	private Double load;
 	
 	@ManyToOne
 	@PlanningVariable(valueRangeProviderRefs = "employeeRange", nullable = true)
@@ -34,14 +35,15 @@ public class Duty {
 	public Duty() {
 		
 	}
-
-	public Duty(Long id, String name, String region, int taskCount, Employee employee, LocalDateTime startDateTime,
-			LocalDateTime endDateTime) {
+	
+	public Duty(Long id, String name, String region, String type, Double load, Employee employee,
+			LocalDateTime startDateTime, LocalDateTime endDateTime) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.region = region;
-		this.taskCount = taskCount;
+		this.type = type;
+		this.load = load;
 		this.employee = employee;
 		this.startDateTime = startDateTime;
 		this.endDateTime = endDateTime;
@@ -71,12 +73,20 @@ public class Duty {
 		this.region = region;
 	}
 
-	public int getTaskCount() {
-		return taskCount;
+	public String getType() {
+		return type;
 	}
 
-	public void setTaskCount(int taskCount) {
-		this.taskCount = taskCount;
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public Double getLoad() {
+		return load;
+	}
+
+	public void setLoad(Double load) {
+		this.load = load;
 	}
 
 	public Employee getEmployee() {
@@ -102,11 +112,11 @@ public class Duty {
 	public void setEndDateTime(LocalDateTime endDateTime) {
 		this.endDateTime = endDateTime;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "Duty [id=" + id + ", name=" + name + ", region=" + region + ", taskCount=" + taskCount + ", employee="
-				+ employee + ", startDateTime=" + startDateTime + ", endDateTime=" + endDateTime + "]";
+		return "Duty [id=" + id + ", name=" + name + ", region=" + region + ", type=" + type + ", load=" + load
+				+ ", employee=" + employee + ", startDateTime=" + startDateTime + ", endDateTime=" + endDateTime + "]";
 	}
 
 	public boolean employeeIsInSameRegion() {

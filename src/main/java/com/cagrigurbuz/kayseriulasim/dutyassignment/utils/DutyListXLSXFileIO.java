@@ -55,7 +55,9 @@ public class DutyListXLSXFileIO {
 				duty.setStartDateTime(LocalDateTime.of(startDate, startTime));
 				duty.setEndDateTime(LocalDateTime.of(endDate, endTime));
 				
-				duty.setTaskCount((int) row.getCell(6).getNumericCellValue());
+				duty.setLoad(row.getCell(6).getNumericCellValue());
+
+				duty.setType(row.getCell(7).getStringCellValue());
 
 				toSave.add(duty);
 			}
