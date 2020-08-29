@@ -25,12 +25,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
         		breakBetweenTwoConsecutiveDutyAtLeast12Hours(constraintFactory),
         };
 	}
-	
-	//TODO
-	//max working day
-	//no conflicting duty for a employee
-	//minimum rest after duty for next duty assignment
-    
+	    
     private static UniConstraintStream<Duty> getAssignedDutyConstraintStream(ConstraintFactory constraintFactory) {
         return constraintFactory.fromUnfiltered(Duty.class)
                 .filter(duty -> duty.getEmployee() != null);
@@ -72,6 +67,8 @@ public class SolverConstraintProvider implements ConstraintProvider {
                 .filter((s1, s2) -> s1.getEndDateTime().until(s2.getStartDateTime(), ChronoUnit.HOURS) < 12)
                 .penalize("At least 12 Hours break after the Duty.", HardSoftScore.ONE_SOFT);
     }
+    
+	//TODO
     
     //Assign same duty on weekdays
     
