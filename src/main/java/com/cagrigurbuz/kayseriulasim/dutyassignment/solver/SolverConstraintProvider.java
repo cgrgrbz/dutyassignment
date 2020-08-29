@@ -44,12 +44,14 @@ public class SolverConstraintProvider implements ConstraintProvider {
         		
     }
     
+    //Try to assign every duty
     Constraint assignEveryDuty(ConstraintFactory constraintFactory) {
         return constraintFactory.fromUnfiltered(Duty.class)
                 .filter(duty -> duty.getEmployee() == null)
-                .penalize("Assign every duty.", HardSoftScore.ONE_SOFT);
+                .penalize("Assign every duty.", HardSoftScore.ofSoft(10 ));
     }
     
+    //No overlapping duties for a employee
     Constraint noOverlappingDuties(ConstraintFactory constraintFactory) {
         return getAssignedDutyConstraintStream(constraintFactory)
                 .join(Duty.class,
@@ -60,6 +62,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
                 .penalize("No Overlapping Duties.", HardSoftScore.ofHard(100));
     }
     
+    //at least 12 hours after each assigned duty
     Constraint breakBetweenTwoConsecutiveDutyAtLeast12Hours(ConstraintFactory constraintFactory) {
         return getAssignedDutyConstraintStream(constraintFactory)
                 .join(Duty.class,
@@ -67,7 +70,12 @@ public class SolverConstraintProvider implements ConstraintProvider {
                         lessThan(Duty::getEndDateTime, Duty::getStartDateTime))
                 .filter((s1, s2) -> !Objects.equals(s1, s2))
                 .filter((s1, s2) -> s1.getEndDateTime().until(s2.getStartDateTime(), ChronoUnit.HOURS) < 12)
-                .penalize("At least 12 Hours break after the Duty.", HardSoftScore.ofSoft(100));
+                .penalize("At least 12 Hours break after the Duty.", HardSoftScore.ONE_SOFT);
     }
     
+    //Assign same duty on weekdays
+    
+    //Maximum 6 days working for each employee
+    
+    //Same dutyType after each duty
 }
