@@ -1,7 +1,10 @@
 package com.cagrigurbuz.kayseriulasim.dutyassignment.domain;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.IsoFields;
+import java.util.Calendar;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -126,5 +129,16 @@ public class Duty {
 	public Long dutyLengthInMinutes() {
 		return startDateTime.until(endDateTime, ChronoUnit.MINUTES);
 	}
-
+	
+	public int getDutyWeekOfYear() {
+		return startDateTime.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+	}
+	
+	public int getDutyDayOfYear() {
+		return startDateTime.get(ChronoField.DAY_OF_YEAR);
+	}
+	
+	public boolean isWeekDay() {
+		return startDateTime.get(ChronoField.DAY_OF_WEEK) < 6;
+	}
 }
