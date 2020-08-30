@@ -1,16 +1,12 @@
 package com.cagrigurbuz.kayseriulasim.dutyassignment.solver;
 
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
-import java.util.function.Function;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
 import org.optaplanner.core.api.score.stream.Constraint;
 import org.optaplanner.core.api.score.stream.ConstraintFactory;
 import org.optaplanner.core.api.score.stream.ConstraintProvider;
-import org.optaplanner.core.api.score.stream.Joiners;
 import org.optaplanner.core.api.score.stream.uni.UniConstraintStream;
 import static org.optaplanner.core.api.score.stream.Joiners.equal;
 import static org.optaplanner.core.api.score.stream.Joiners.greaterThan;
@@ -18,7 +14,6 @@ import static org.optaplanner.core.api.score.stream.Joiners.lessThan;
 import static org.optaplanner.core.api.score.stream.ConstraintCollectors.count;
 
 import com.cagrigurbuz.kayseriulasim.dutyassignment.domain.Duty;
-import com.cagrigurbuz.kayseriulasim.dutyassignment.domain.Employee;
 
 public class SolverConstraintProvider implements ConstraintProvider {
 
