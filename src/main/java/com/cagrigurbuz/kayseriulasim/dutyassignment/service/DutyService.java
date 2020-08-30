@@ -81,11 +81,11 @@ public class DutyService {
         final Set<String> addedDutySet = new HashSet<>();
         
         excelDutyList.stream().flatMap(duty -> {
-            if (addedDutySet.contains(duty.getName().toLowerCase())) {
-                // Duplicate Employee; already in the stream
+            if (addedDutySet.contains(duty.getId())) {
+                // Duplicate Duty; already in the stream
                 return Stream.empty();
             }
-            // Add employee to the stream
+            // Add duty to the stream
             addedDutySet.add(duty.getName().toLowerCase());
             return Stream.of(duty);
         }).forEach(duty -> {
