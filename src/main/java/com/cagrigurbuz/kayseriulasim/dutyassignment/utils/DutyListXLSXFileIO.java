@@ -23,7 +23,7 @@ public class DutyListXLSXFileIO {
 
 	// TODO
 	// Assuming that all the cell types as we wanted in the XLSX file, so it's may
-	// (will) have problems in large datasets..
+	// (will) have problems in large data sets..
 	// What to do? Read all cells as string then convert what ever you want..
 
 	private final EmployeeService employeeService;
