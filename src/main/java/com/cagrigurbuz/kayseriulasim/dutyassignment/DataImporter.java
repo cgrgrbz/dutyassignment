@@ -33,12 +33,12 @@ public class DataImporter {
 	@PostConstruct
 	public void importSampleDataAtStartup() {
 		
-		try {
-			InputStream dutyList = new FileInputStream("src\\main\\resources\\DutyList.xlsx");	
-			dutyService.importDutyFromExcel(dutyList);
-			
+		try {			
 			InputStream employeeList = new FileInputStream("src\\main\\resources\\EmployeeList.xlsx");	
 			employeeService.importEmployeesFromExcel(employeeList);
+			
+			InputStream dutyList = new FileInputStream("src\\main\\resources\\DutyList.xlsx");	
+			dutyService.importDutyFromExcel(dutyList);
 			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
