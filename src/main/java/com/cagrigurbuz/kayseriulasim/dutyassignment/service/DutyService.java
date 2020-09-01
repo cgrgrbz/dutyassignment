@@ -59,6 +59,8 @@ public class DutyService {
     	oldDuty.setEmployee(newDuty.getEmployee());
 
     	oldDuty.setLoad(newDuty.getLoad());
+    	
+    	oldDuty.setItCurrentDutyToBeAssigned(newDuty.isItCurrentDutyToBeAssigned());
         
         return dutyRepository.save(oldDuty);
     }

@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
-import java.util.Calendar;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -17,7 +15,7 @@ import org.optaplanner.core.api.domain.lookup.PlanningId;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 @Entity
-@PlanningEntity
+@PlanningEntity(pinningFilter = DutySelectionFilter.class)
 public class Duty {
 	
 	@PlanningId
@@ -34,13 +32,15 @@ public class Duty {
 	private Employee employee;
 	
 	private LocalDateTime startDateTime, endDateTime;
-		
+	
+	private boolean isItCurrentDutyToBeAssigned;
+	
 	public Duty() {
 		
 	}
-	
+
 	public Duty(Long id, String name, String region, String type, Double load, Employee employee,
-			LocalDateTime startDateTime, LocalDateTime endDateTime) {
+			LocalDateTime startDateTime, LocalDateTime endDateTime, boolean isItCurrentDutyToBeAssigned) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -50,6 +50,7 @@ public class Duty {
 		this.employee = employee;
 		this.startDateTime = startDateTime;
 		this.endDateTime = endDateTime;
+		this.isItCurrentDutyToBeAssigned = isItCurrentDutyToBeAssigned;
 	}
 
 	public Long getId() {
@@ -116,6 +117,14 @@ public class Duty {
 		this.endDateTime = endDateTime;
 	}
 
+	public boolean isItCurrentDutyToBeAssigned() {
+		return isItCurrentDutyToBeAssigned;
+	}
+
+	public void setItCurrentDutyToBeAssigned(boolean isItCurrentDutyToBeAssigned) {
+		this.isItCurrentDutyToBeAssigned = isItCurrentDutyToBeAssigned;
+	}
+
 	@Override
 	public String toString() {
 		return "Duty [id=" + id + ", name=" + name + ", region=" + region + ", type=" + type + ", load=" + load
@@ -140,5 +149,6 @@ public class Duty {
 	
 	public boolean isWeekDay() {
 		return startDateTime.get(ChronoField.DAY_OF_WEEK) < 6;
-	}
+	}	
+
 }
