@@ -1,7 +1,8 @@
 package com.cagrigurbuz.kayseriulasim.dutyassignment.domain;
 
+import java.time.LocalDate;
+import java.time.temporal.IsoFields;
 import java.util.List;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -23,6 +24,11 @@ public class Schedule {
     @GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	
+	private LocalDate scheduleStartDate;
+	
+	@PlanningScore
+	private HardSoftScore score;
+	
 	@ProblemFactCollectionProperty
 	@OneToMany
 	@ValueRangeProvider(id = "employeeRange")
@@ -31,19 +37,19 @@ public class Schedule {
 	@OneToMany
 	@PlanningEntityCollectionProperty
 	private List<Duty> dutyList;
-	
-	@PlanningScore
-	private HardSoftScore score;
 
 	public Schedule() {
 
 	}
-
-	public Schedule(List<Employee> employeeList, List<Duty> dutyList, HardSoftScore score) {
+	
+	public Schedule(Long id, List<Employee> employeeList, List<Duty> dutyList, HardSoftScore score,
+			LocalDate scheduleStartDate) {
 		super();
+		this.id = id;
 		this.employeeList = employeeList;
 		this.dutyList = dutyList;
 		this.score = score;
+		this.scheduleStartDate = scheduleStartDate;
 	}
 
 	public List<Employee> getEmployeeList() {
@@ -78,5 +84,27 @@ public class Schedule {
 		this.id = id;
 	}
 
+	public LocalDate getScheduleStartDate() {
+		return scheduleStartDate;
+	}
 
+	public void setScheduleStartDate(LocalDate scheduleStartDate) {
+		this.scheduleStartDate = scheduleStartDate;
+	}
+	
+	public int getScheduleWeekOfYear() {
+		return scheduleStartDate.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+	}
+	
+	public void setCurrentDutyFlag(LocalDate scheduleStartDate) {
+		
+		for(Duty duty : dutyList) {
+			
+			LocalDate dutyStartDate = duty.getStartDateTime().toLocalDate();
+			
+			if (dutyStartDate.isAfter(scheduleStartDate) || dutyStartDate.isEqual(scheduleStartDate) ) {
+				duty.setItCurrentDutyToBeAssigned(true);
+			}
+		}
+	}
 }
