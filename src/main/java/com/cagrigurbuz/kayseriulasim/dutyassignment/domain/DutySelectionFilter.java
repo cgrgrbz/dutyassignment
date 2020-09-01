@@ -11,5 +11,6 @@ public class DutySelectionFilter implements PinningFilter<Schedule, Duty>{
 		LocalDate scheduleStartDate = solution.getScheduleStartDate();
 		LocalDate dutyStartDate = entity.getStartDateTime().toLocalDate();
 		return dutyStartDate.isBefore(scheduleStartDate); //accept only the entities that be considered in the current schedule, comparing the scheduleStartDate
+		//////////?? how
 	}
 }
