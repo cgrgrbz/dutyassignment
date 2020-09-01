@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,6 +32,7 @@ import io.swagger.annotations.ApiOperation;
 @Api(tags = "Emloyee")
 public class EmployeeController {
 
+	@Autowired
 	private final EmployeeService employeeService;
 
 	public EmployeeController(EmployeeService employeeService) {
@@ -41,6 +45,12 @@ public class EmployeeController {
 	public ResponseEntity<List<Employee>> getEmployeeList() {
 		return new ResponseEntity<>(employeeService.getEmployeeList(), HttpStatus.OK);
 	}
+	
+    @ApiOperation("Get an employee by employeeCode")
+    @GetMapping("/{employeeCode}")
+    public ResponseEntity<Employee> getEmployee(@PathVariable String employeeCode) {
+        return new ResponseEntity<>(employeeService.getEmployeeByCode(employeeCode), HttpStatus.OK);
+    }
 	
 	@ApiOperation("Add a new employee")
 	@PostMapping("/add")
