@@ -57,7 +57,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
                         equal(Duty::getEmployee),
                         lessThan(Duty::getStartDateTime, Duty::getEndDateTime),
                         greaterThan(Duty::getEndDateTime, Duty::getStartDateTime))
-                .filter((duty, otherDuty) -> !Objects.equals(duty, otherDuty))
+                .filter((duty, otherDuty) -> !Objects.equals(duty, otherDuty) & duty.isItCurrentDutyToBeAssigned())
                 .penalize("No Overlapping Duties.", HardSoftScore.ofHard(100));
     }
     
@@ -94,5 +94,13 @@ public class SolverConstraintProvider implements ConstraintProvider {
 	        .penalize("Maximum working of 6 days per week.", HardSoftScore.ONE_HARD);
     }
 
-    //Same dutyType after each duty
+    //Assign same dutyType for the following assignment
+    
+    //Fair dutyType assignment
+    
+    //Fair duty assignment
+    
+    //Do not assign same duty consecutive weeks - Soft
+    
+    //Do not assign NIGHT duty consecutive weeks - Hard
 }
