@@ -34,6 +34,11 @@ public class DutyService {
     public List<Duty> getDutyList() {
         return dutyRepository.findAll();
     }
+	
+	@Transactional
+    public List<Duty> getCurrentDutyList() {
+        return dutyRepository.findCurrentDuties();
+    }
 
     @Transactional
     public Duty addDuty(Duty duty) {

@@ -8,20 +8,37 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.flyway.FlywayDataSource;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
 import com.cagrigurbuz.kayseriulasim.dutyassignment.domain.Duty;
+import com.cagrigurbuz.kayseriulasim.dutyassignment.domain.Employee;
+import com.cagrigurbuz.kayseriulasim.dutyassignment.service.EmployeeService;
 
 @Component
 public class DutyListXLSXFileIO {
-	
-	//TODO 
-	//Assuming that all the cell types as we wanted in the XLSX file, so it's may (will) have problems in large datasets..
-	//What to do? Read all cells as string then convert what ever you want..
+
+	// TODO
+	// Assuming that all the cell types as we wanted in the XLSX file, so it's may
+	// (will) have problems in large datasets..
+	// What to do? Read all cells as string then convert what ever you want..
+
+	private final EmployeeService employeeService;
+
+	@Autowired
+	public DutyListXLSXFileIO(EmployeeService employeeService) {
+		super();
+		this.employeeService = employeeService;
+	}
 
 	public List<Duty> getDutyListFromExcelFile(InputStream excelFileStream) throws IOException {
 		try (Workbook workbook = new XSSFWorkbook(excelFileStream)) {
@@ -54,16 +71,24 @@ public class DutyListXLSXFileIO {
 
 				duty.setStartDateTime(LocalDateTime.of(startDate, startTime));
 				duty.setEndDateTime(LocalDateTime.of(endDate, endTime));
-				
+
 				duty.setLoad(row.getCell(6).getNumericCellValue());
 
 				duty.setType(row.getCell(7).getStringCellValue());
 
+				// if it's an old duty (not in current schedule) it's might have an employee
+				// so we can will use it for fair duty assignments
+				if (row.getCell(8) != null) {
+					String employeeCode = row.getCell(8).getStringCellValue();
+					Employee employee = employeeService.getEmployeeByCode(employeeCode);
+					duty.setEmployee(employee);
+				}
+
 				toSave.add(duty);
 			}
-			
+
 			return toSave;
-			
+
 		}
 	}
 
