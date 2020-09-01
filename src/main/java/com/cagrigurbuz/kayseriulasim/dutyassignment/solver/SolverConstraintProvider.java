@@ -28,12 +28,13 @@ public class SolverConstraintProvider implements ConstraintProvider {
         		maxSixWorkingDayInAWeek(constraintFactory),
         };
 	}
-	    
+	
+	// returns only the assigned duties from all duties
     private static UniConstraintStream<Duty> getAssignedDutyConstraintStream(ConstraintFactory constraintFactory) {
         return constraintFactory.fromUnfiltered(Duty.class)
                 .filter(duty -> duty.getEmployee() != null);
     }
-    
+       
     //Assign A Employee Only From Same Region
     private Constraint requiredRegionOfEmployee(ConstraintFactory constraintFactory) {
         return getAssignedDutyConstraintStream(constraintFactory)
@@ -42,10 +43,10 @@ public class SolverConstraintProvider implements ConstraintProvider {
         		
     }
     
-    //Try to assign every duty
+   //Try to assign every duty in the Current schedule period
     Constraint assignEveryDuty(ConstraintFactory constraintFactory) {
         return constraintFactory.fromUnfiltered(Duty.class)
-                .filter(duty -> duty.getEmployee() == null)
+                .filter(duty -> duty.getEmployee() == null & duty.isItCurrentDutyToBeAssigned())
                 .penalize("Assign every duty.", HardSoftScore.ofSoft(10));
     }
     
@@ -86,7 +87,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
     
     //Maximum 6 days working for each employee   
     Constraint maxSixWorkingDayInAWeek(ConstraintFactory constraintFactory) {
-    	return constraintFactory.from(Duty.class)
+    	return getAssignedDutyConstraintStream(constraintFactory)
 	        .groupBy(
 	        		duty -> Pair.of(duty.getEmployee(), duty.getDutyWeekOfYear()), count())
             .filter((duty, count) -> count > 6)
