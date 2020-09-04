@@ -5,6 +5,7 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
 
+import javax.annotation.Priority;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -29,6 +30,8 @@ public class Duty {
 	
 	private Double load;
 	
+	private int priority;
+	
 	@ManyToOne(cascade=CascadeType.ALL)
 	@PlanningVariable(valueRangeProviderRefs = "employeeRange", nullable = true)
 	private Employee employee;
@@ -42,7 +45,7 @@ public class Duty {
 	}
 
 	public Duty(Long id, String name, String region, String type, Double load, Employee employee,
-			LocalDateTime startDateTime, LocalDateTime endDateTime, boolean isItCurrentDutyToBeAssigned) {
+			LocalDateTime startDateTime, LocalDateTime endDateTime, boolean isItCurrentDutyToBeAssigned, int priority) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -53,6 +56,7 @@ public class Duty {
 		this.startDateTime = startDateTime;
 		this.endDateTime = endDateTime;
 		this.isItCurrentDutyToBeAssigned = isItCurrentDutyToBeAssigned;
+		this.priority = priority;
 	}
 
 	public Long getId() {
@@ -127,6 +131,14 @@ public class Duty {
 		this.isItCurrentDutyToBeAssigned = isItCurrentDutyToBeAssigned;
 	}
 
+	public int getPriority() {
+		return priority;
+	}
+
+	public void setPriority(int priority) {
+		this.priority = priority;
+	}
+
 	@Override
 	public String toString() {
 		return "Duty [id=" + id + ", name=" + name + ", region=" + region + ", type=" + type + ", load=" + load
@@ -153,4 +165,7 @@ public class Duty {
 		return startDateTime.get(ChronoField.DAY_OF_WEEK) < 6;
 	}	
 
+	public int penalt() {
+		return load.intValue()*priority;
+	}
 }

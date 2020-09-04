@@ -64,7 +64,7 @@ public class DutyService {
     	oldDuty.setEmployee(newDuty.getEmployee());
 
     	oldDuty.setLoad(newDuty.getLoad());
-    	
+    	oldDuty.setPriority(newDuty.getPriority());
     	oldDuty.setItCurrentDutyToBeAssigned(newDuty.isItCurrentDutyToBeAssigned());
         
         return dutyRepository.save(oldDuty);
