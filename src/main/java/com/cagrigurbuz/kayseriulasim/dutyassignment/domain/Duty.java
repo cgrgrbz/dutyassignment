@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -27,7 +29,7 @@ public class Duty {
 	
 	private Double load;
 	
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	@PlanningVariable(valueRangeProviderRefs = "employeeRange", nullable = true)
 	private Employee employee;
 	
