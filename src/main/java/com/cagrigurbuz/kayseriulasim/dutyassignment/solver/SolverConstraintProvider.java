@@ -22,10 +22,13 @@ public class SolverConstraintProvider implements ConstraintProvider {
         return new Constraint[] {
         		requiredRegionOfEmployee(constraintFactory),
         		assignEveryDuty(constraintFactory),
-        		noOverlappingDuties(constraintFactory),
-        		breakBetweenTwoConsecutiveDutyAtLeast12Hours(constraintFactory),
-        		assignSameDutiesForTheSameWeek(constraintFactory),
-        		maxSixWorkingDayInAWeek(constraintFactory),
+        		//noOverlappingDuties(constraintFactory),
+        		//breakBetweenTwoConsecutiveDutyAtLeast12Hours(constraintFactory),
+        		//assignSameDutiesForTheSameWeek(constraintFactory),
+        		//maxSixWorkingDayInAWeek(constraintFactory),
+        		oneDutyPerDay(constraintFactory),
+        		maxTwoDutyInAWeek(constraintFactory),
+        		onlyAndOnlyOneWeekendDuty(constraintFactory),
         };
 	}
 	
@@ -38,8 +41,8 @@ public class SolverConstraintProvider implements ConstraintProvider {
     //Assign A Employee Only From Same Region
     private Constraint requiredRegionOfEmployee(ConstraintFactory constraintFactory) {
         return getAssignedDutyConstraintStream(constraintFactory)
-                .filter(duty -> !duty.employeeIsInSameRegion())
-                .penalize("Assign employee from the same region.", HardSoftScore.ONE_HARD);
+                .filter(duty -> duty.getEmployee().getRegion() != duty.getRegion())
+                .penalize("Assign employee from the same region.", HardSoftScore.ofHard(100));
         		
     }
     
@@ -47,7 +50,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
     Constraint assignEveryDuty(ConstraintFactory constraintFactory) {
         return constraintFactory.fromUnfiltered(Duty.class)
                 .filter(duty -> duty.getEmployee() == null & duty.isItCurrentDutyToBeAssigned())
-                .penalize("Assign every duty.", HardSoftScore.ofSoft(10));
+                .penalize("Assign every duty.", HardSoftScore.ofSoft(1), duty -> duty.getLoad().intValue());
     }
     
     //No overlapping duties for a employee
@@ -75,23 +78,50 @@ public class SolverConstraintProvider implements ConstraintProvider {
 	//TODO CHECK IT IF CORRECT    
     //Assign same duty to the same employee on weekdays
     Constraint assignSameDutiesForTheSameWeek(ConstraintFactory constraintFactory) {
-        return constraintFactory.fromUnfiltered(Duty.class)
-                .join(Duty.class,
-                        equal(Duty::getName),
-                        equal(Duty::getDutyWeekOfYear),
-                        lessThan(Duty::getId),
-                        greaterThan(Duty::getId))
-                .filter((d1, d2) -> !Objects.equals(d1.getEmployee(), d2.getEmployee()))
-                .penalize("Same duty for the weekday duties", HardSoftScore.ONE_HARD);
+    	return getAssignedDutyConstraintStream(constraintFactory)
+    			.join(Duty.class,
+    					equal(Duty::isWeekDay))
+    			.filter((duty, otherDuty) -> duty.getName() == otherDuty.getName())
+    			.filter((duty, otherDuty) -> duty.getEmployee() != otherDuty.getEmployee())
+    	        .penalize("Same duty at weekdays!.", HardSoftScore.ONE_HARD);
     }
     
-    //Maximum 6 days working for each employee   
+    
+    //Maximum 6 days working for each week   
     Constraint maxSixWorkingDayInAWeek(ConstraintFactory constraintFactory) {
     	return getAssignedDutyConstraintStream(constraintFactory)
-	        .groupBy(
-	        		duty -> Pair.of(duty.getEmployee(), duty.getDutyWeekOfYear()), count())
-            .filter((duty, count) -> count > 6)
-	        .penalize("Maximum working of 6 days per week.", HardSoftScore.ONE_HARD);
+    	        .groupBy(
+    	        		duty -> Pair.of(duty.getEmployee(), duty.getDutyWeekOfYear()), count())
+                .filter((employee, count) -> count > 6)
+    	        .penalize("Maximum working of 6 days per week.", HardSoftScore.ONE_HARD);
+    }
+    
+    //Maximum 6 days working for each week   
+    Constraint maxTwoDutyInAWeek(ConstraintFactory constraintFactory) {
+    	return getAssignedDutyConstraintStream(constraintFactory)
+    	        .groupBy(
+    	        		duty -> Pair.of(duty.getEmployee(), duty.getDutyWeekOfYear()), count())
+                .filter((employee, count) -> count > 2)
+    	        .penalize("Maximum 2 duty per week.", HardSoftScore.ONE_HARD);
+    }
+    
+    //Assign two duty per week
+    Constraint oneDutyPerDay(ConstraintFactory constraintFactory) {
+    	return getAssignedDutyConstraintStream(constraintFactory)
+    	        .groupBy(
+    	        		duty -> Pair.of(duty.getEmployee(), duty.getDutyDayOfYear()), count())
+                .filter((employee, count) -> count > 1)
+    	        .penalize("No more than one duty per day.", HardSoftScore.ONE_HARD);
+    }
+    
+    //Assign only one weekend duty for sure
+    Constraint onlyAndOnlyOneWeekendDuty(ConstraintFactory constraintFactory) {
+    	return getAssignedDutyConstraintStream(constraintFactory)
+    			.filter(duty -> !duty.isWeekDay())
+    	        .groupBy(
+    	        		duty -> Pair.of(duty.getEmployee(), duty.getDutyWeekOfYear()), count())
+                .filter((employee, count) -> count > 1)
+    	        .penalize("Assign only one weekend duty for sure.", HardSoftScore.ONE_HARD);
     }
 
     //Assign same dutyType for the following assignment
