@@ -20,15 +20,12 @@ public class SolverConstraintProvider implements ConstraintProvider {
 	@Override
 	public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[] {
-        		requiredRegionOfEmployee(constraintFactory),
+        		//requiredRegionOfEmployee(constraintFactory),
         		assignEveryDuty(constraintFactory),
-        		//noOverlappingDuties(constraintFactory),
-        		//breakBetweenTwoConsecutiveDutyAtLeast12Hours(constraintFactory),
-        		//assignSameDutiesForTheSameWeek(constraintFactory),
-        		//maxSixWorkingDayInAWeek(constraintFactory),
         		oneDutyPerDay(constraintFactory),
         		maxTwoDutyInAWeek(constraintFactory),
         		onlyAndOnlyOneWeekendDuty(constraintFactory),
+        		firstHighyPriorityDuties(constraintFactory),
         };
 	}
 	
@@ -41,7 +38,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
     //Assign A Employee Only From Same Region
     private Constraint requiredRegionOfEmployee(ConstraintFactory constraintFactory) {
         return getAssignedDutyConstraintStream(constraintFactory)
-                .filter(duty -> duty.getEmployee().getRegion() != duty.getRegion())
+                .filter(duty -> !duty.employeeIsInSameRegion())
                 .penalize("Assign employee from the same region.", HardSoftScore.ofHard(100));
         		
     }
@@ -50,7 +47,18 @@ public class SolverConstraintProvider implements ConstraintProvider {
     Constraint assignEveryDuty(ConstraintFactory constraintFactory) {
         return constraintFactory.fromUnfiltered(Duty.class)
                 .filter(duty -> duty.getEmployee() == null & duty.isItCurrentDutyToBeAssigned())
-                .penalize("Assign every duty.", HardSoftScore.ofSoft(1), duty -> duty.getLoad().intValue());
+                .penalize("Assign every duty.", HardSoftScore.ofSoft(1), duty -> duty.getLoad().intValue() * duty.getPriority());
+    }
+    
+    //Assign high priority duties rather than lower ones
+    Constraint firstHighyPriorityDuties(ConstraintFactory constraintFactory) {
+    	return getAssignedDutyConstraintStream(constraintFactory)
+    			.join(Duty.class,
+    					greaterThan(Duty::getPriority, Duty::getPriority)
+    					)
+    			.filter((duty, otherDuty) -> duty.getEmployee() == null & otherDuty.getEmployee() != null)
+    			.penalize("firstHighyPriorityDuties", HardSoftScore.ONE_HARD);
+    	
     }
     
     //No overlapping duties for a employee
