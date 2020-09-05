@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import org.optaplanner.core.api.score.ScoreManager;
 import org.optaplanner.core.api.solver.SolverManager;
+import org.optaplanner.core.api.solver.SolverStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,6 +55,14 @@ public class SolverController {
 		
 		solverManager.solveAndListen(scheduleId, this::getSchedule, this::saveSchedule);
 		
+	}
+	
+	@ApiOperation("Terminate Solver")
+	@PostMapping("/terminate")
+	public void terminateSolver() {
+		if (solverManager.getSolverStatus(scheduleId) == SolverStatus.SOLVING_ACTIVE) {
+			solverManager.terminateEarly(scheduleId);
+		}
 	}
 	
 	
