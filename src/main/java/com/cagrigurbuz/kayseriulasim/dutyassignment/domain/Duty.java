@@ -2,10 +2,8 @@ package com.cagrigurbuz.kayseriulasim.dutyassignment.domain;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
-import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
 
-import javax.annotation.Priority;
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -28,7 +26,7 @@ public class Duty {
 	
 	private String name, region, type;
 	
-	private Double load;
+	private Double load, totalWorkingHour;
 	
 	private int priority;
 	
@@ -38,14 +36,14 @@ public class Duty {
 	
 	private LocalDateTime startDateTime, endDateTime;
 	
-	private boolean isItCurrentDutyToBeAssigned;
+	private boolean inCurrentSchedule;
 	
 	public Duty() {
 		
 	}
 
 	public Duty(Long id, String name, String region, String type, Double load, Employee employee,
-			LocalDateTime startDateTime, LocalDateTime endDateTime, boolean isItCurrentDutyToBeAssigned, int priority) {
+			LocalDateTime startDateTime, LocalDateTime endDateTime, boolean inCurrentSchedule, int priority, Double totalWorkingHour) {
 		super();
 		this.id = id;
 		this.name = name;
@@ -55,8 +53,9 @@ public class Duty {
 		this.employee = employee;
 		this.startDateTime = startDateTime;
 		this.endDateTime = endDateTime;
-		this.isItCurrentDutyToBeAssigned = isItCurrentDutyToBeAssigned;
+		this.inCurrentSchedule = inCurrentSchedule;
 		this.priority = priority;
+		this.totalWorkingHour = totalWorkingHour;
 	}
 
 	public Long getId() {
@@ -123,12 +122,12 @@ public class Duty {
 		this.endDateTime = endDateTime;
 	}
 
-	public boolean isItCurrentDutyToBeAssigned() {
-		return isItCurrentDutyToBeAssigned;
+	public boolean isInCurrentSchedule() {
+		return inCurrentSchedule;
 	}
 
-	public void setItCurrentDutyToBeAssigned(boolean isItCurrentDutyToBeAssigned) {
-		this.isItCurrentDutyToBeAssigned = isItCurrentDutyToBeAssigned;
+	public void setInCurrentSchedule(boolean inCurrentSchedule) {
+		this.inCurrentSchedule = inCurrentSchedule;
 	}
 
 	public int getPriority() {
@@ -139,18 +138,37 @@ public class Duty {
 		this.priority = priority;
 	}
 
+	public Double getTotalWorkingHour() {
+		return totalWorkingHour;
+	}
+
+	public void setTotalWorkingHour(Double totalWorkingHour) {
+		this.totalWorkingHour = totalWorkingHour;
+	}
+
 	@Override
 	public String toString() {
 		return "Duty [id=" + id + ", name=" + name + ", region=" + region + ", type=" + type + ", load=" + load
-				+ ", employee=" + employee + ", startDateTime=" + startDateTime + ", endDateTime=" + endDateTime + "]";
+				+ ", totalWorkingHour=" + totalWorkingHour + ", priority=" + priority + ", employee=" + employee
+				+ ", startDateTime=" + startDateTime + ", endDateTime=" + endDateTime + ", isItCurrentDutyToBeAssigned="
+				+ inCurrentSchedule + "]";
 	}
 
 	public boolean employeeIsInSameRegion() {
 		return employee.getRegion() == getRegion();
 	}
 	
-	public Long dutyLengthInMinutes() {
-		return startDateTime.until(endDateTime, ChronoUnit.MINUTES);
+	//we have totalWorkingHours in terms of hours, 7.5 hours for ex.
+	//the input always will be .5 or .0 fraction
+	//so getting int from that double is not a problem for rounding
+	//BUT
+	//will probably directly get minute values from data later
+	public int totalWorkingHourInMinutes() {
+		return (int) (totalWorkingHour*60);
+	}
+	
+	public int getDutyMonthOfYear() {
+		return startDateTime.getMonthValue();
 	}
 	
 	public int getDutyWeekOfYear() {
@@ -177,7 +195,12 @@ public class Duty {
 		return getEmployee() == null;
 	}
 	
-	//TODO
-	//dutyLengthInMinutes
-	//dutyLengthInHours
+	public boolean isNextDayDuty(Duty duty) {
+		return duty.startDateTime.toLocalDate().plusDays(1).equals(this.getStartDateTime().toLocalDate());
+	}
+	
+	public boolean isNextWeekDuty(Duty duty) {
+		return duty.startDateTime.toLocalDate().plusDays(7).equals(this.getStartDateTime().toLocalDate());
+	}
+	
 }

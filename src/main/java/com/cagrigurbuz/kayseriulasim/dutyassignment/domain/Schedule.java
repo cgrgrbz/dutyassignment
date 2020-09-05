@@ -14,7 +14,7 @@ import org.optaplanner.core.api.domain.solution.PlanningScore;
 import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.domain.solution.ProblemFactCollectionProperty;
 import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
-import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
+import org.optaplanner.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScore;
 import org.optaplanner.core.api.solver.SolverStatus;
 
 @PlanningSolution
@@ -29,8 +29,10 @@ public class Schedule {
 	
 	private LocalDate scheduleStartDate;
 	
+	private LocalDate scheduleEndDate;
+	
 	@PlanningScore
-	private HardSoftScore score;
+	private HardMediumSoftLongScore score;
 	
 	@ProblemFactCollectionProperty
 	@OneToMany
@@ -68,11 +70,11 @@ public class Schedule {
 		this.dutyList = dutyList;
 	}
 
-	public HardSoftScore getScore() {
+	public HardMediumSoftLongScore getScore() {
 		return score;
 	}
 
-	public void setScore(HardSoftScore score) {
+	public void setScore(HardMediumSoftLongScore score) {
 		this.score = score;
 	}
 
@@ -92,6 +94,14 @@ public class Schedule {
 		this.scheduleStartDate = scheduleStartDate;
 	}
 	
+	public LocalDate getScheduleEndDate() {
+		return scheduleEndDate;
+	}
+
+	public void setScheduleEndDate(LocalDate scheduleEndDate) {
+		this.scheduleEndDate = scheduleEndDate;
+	}
+
 	public SolverStatus getSolverStatus() {
 		return solverStatus;
 	}
@@ -104,14 +114,19 @@ public class Schedule {
 		return scheduleStartDate.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
 	}
 	
-	public void setCurrentDutyFlag(LocalDate scheduleStartDate) {
+	public void setCurrentDutyFlag() {
 		
+		//will do it streams, for performance on big datasets.
 		for(Duty duty : dutyList) {
 			
 			LocalDate dutyStartDate = duty.getStartDateTime().toLocalDate();
 			
-			if (dutyStartDate.isAfter(scheduleStartDate) || dutyStartDate.isEqual(scheduleStartDate) ) {
-				duty.setItCurrentDutyToBeAssigned(true);
+			//if schedule not before the given startDate
+			//AND
+			//if not after the endDate, schedule length in term of days is taken from the user
+			//for example, solve from the date X for Y days
+			if (!dutyStartDate.isBefore(scheduleStartDate) && !dutyStartDate.isAfter(scheduleEndDate)){
+				duty.setInCurrentSchedule(true);
 			}
 		}
 	}

@@ -15,7 +15,7 @@ public interface DutyRepository extends CrudRepository<Duty, Long> {
 	@Query("select d from Duty d where d.id = :dutyId")
 	Duty findDutyById(@Param("dutyId") Long id);
 
-	@Query("select d from Duty d where d.isItCurrentDutyToBeAssigned = true")
+	@Query("select d from Duty d where d.inCurrentSchedule = true")
 	List<Duty> findCurrentDuties();
 
 }

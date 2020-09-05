@@ -73,7 +73,11 @@ public class Employee {
 	public void setMaxMonthlyWorkingHour(double maxMonthlyWorkingHour) {
 		this.maxMonthlyWorkingHour = maxMonthlyWorkingHour;
 	}
-
+	
+	public int getMaxMonthlyWorkingInMinutes() {
+		return (int) (maxMonthlyWorkingHour*60);
+	}
+	
 	@Override
 	public String toString() {
 		return "Employee [id=" + id + ", code=" + code + ", name=" + name + ", region=" + region + "]";

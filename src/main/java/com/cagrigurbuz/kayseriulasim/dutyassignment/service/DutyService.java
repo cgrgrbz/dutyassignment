@@ -65,7 +65,9 @@ public class DutyService {
 
     	oldDuty.setLoad(newDuty.getLoad());
     	oldDuty.setPriority(newDuty.getPriority());
-    	oldDuty.setItCurrentDutyToBeAssigned(newDuty.isItCurrentDutyToBeAssigned());
+    	oldDuty.setInCurrentSchedule(newDuty.isInCurrentSchedule());
+    	
+    	oldDuty.setTotalWorkingHour(newDuty.getTotalWorkingHour());
         
         return dutyRepository.save(oldDuty);
     }
@@ -82,6 +84,9 @@ public class DutyService {
     
     @Transactional
     public List<Duty> importDutyFromExcel(InputStream excelInputStream) throws IOException {
+    	
+    	//TODO
+    	//Control here, what did I do?
     	
         List<Duty> excelDutyList = dutyListXLSXFileIO.getDutyListFromExcelFile(excelInputStream);
 

@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
-import com.cagrigurbuz.kayseriulasim.dutyassignment.domain.Employee;
 import com.cagrigurbuz.kayseriulasim.dutyassignment.domain.Schedule;
 
 public interface ScheduleRepository extends CrudRepository<Schedule, Long> {
