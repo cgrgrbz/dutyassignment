@@ -48,7 +48,9 @@ public class DutyListXLSXFileIO {
 				String dutyName, employeeCode, employeeName, dutyRegion, dutyType, dutyLoad, dutyStartDate, dutyStartTime,
 						dutyEndDate, dutyEndTime;
 				
-				int dutyPriority, maxMonthlyWorkingHour;
+				int dutyPriority;
+				
+				Double totalWorkingHour;
 				
 				LocalDate startDate, endDate;
 				LocalTime startTime, endTime;
@@ -62,6 +64,7 @@ public class DutyListXLSXFileIO {
 				dutyEndDate = formatter.formatCellValue(row.getCell(10));
 				dutyEndTime = formatter.formatCellValue(row.getCell(11));
 				dutyPriority = (int) row.getCell(12).getNumericCellValue();
+				totalWorkingHour =  row.getCell(13).getNumericCellValue();
 				
 				startDate = LocalDate.parse(dutyStartDate);
 				startTime = LocalTime.parse(dutyStartTime);
@@ -75,13 +78,13 @@ public class DutyListXLSXFileIO {
 				duty.setPriority(dutyPriority);
 				duty.setStartDateTime(LocalDateTime.of(startDate, startTime));
 				duty.setEndDateTime(LocalDateTime.of(endDate, endTime));
+				duty.setTotalWorkingHour(totalWorkingHour);
 
 				// if it's an old duty (not in current schedule) it's might have an employee
 				// so we can will use it for fair duty assignments
 				if (row.getCell(2) != null) {
 					employeeCode = row.getCell(2).getStringCellValue();
 					employeeName = row.getCell(3).getStringCellValue();
-					maxMonthlyWorkingHour = (int) row.getCell(13).getNumericCellValue();
 										
 					Employee employee = employeeService.getEmployeeByCode(employeeCode);
 					
@@ -97,7 +100,7 @@ public class DutyListXLSXFileIO {
 //				isCurrentDuty = (duty.getEmployee() == null) ? true : false;
 //				duty.setItCurrentDutyToBeAssigned(isCurrentDuty);
 				
-				duty.setItCurrentDutyToBeAssigned(false);
+				duty.setInCurrentSchedule(false);
 							
 				toSave.add(duty);
 			}
