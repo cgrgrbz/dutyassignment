@@ -15,6 +15,7 @@ import org.optaplanner.core.api.domain.solution.PlanningSolution;
 import org.optaplanner.core.api.domain.solution.ProblemFactCollectionProperty;
 import org.optaplanner.core.api.domain.valuerange.ValueRangeProvider;
 import org.optaplanner.core.api.score.buildin.hardsoft.HardSoftScore;
+import org.optaplanner.core.api.solver.SolverStatus;
 
 @PlanningSolution
 @Entity
@@ -23,6 +24,8 @@ public class Schedule {
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
+	
+    private SolverStatus solverStatus;
 	
 	private LocalDate scheduleStartDate;
 	
@@ -42,14 +45,11 @@ public class Schedule {
 
 	}
 	
-	public Schedule(Long id, List<Employee> employeeList, List<Duty> dutyList, HardSoftScore score,
-			LocalDate scheduleStartDate) {
+	public Schedule(Long id, List<Employee> employeeList, List<Duty> dutyList) {
 		super();
 		this.id = id;
 		this.employeeList = employeeList;
 		this.dutyList = dutyList;
-		this.score = score;
-		this.scheduleStartDate = scheduleStartDate;
 	}
 
 	public List<Employee> getEmployeeList() {
@@ -92,6 +92,14 @@ public class Schedule {
 		this.scheduleStartDate = scheduleStartDate;
 	}
 	
+	public SolverStatus getSolverStatus() {
+		return solverStatus;
+	}
+
+	public void setSolverStatus(SolverStatus solverStatus) {
+		this.solverStatus = solverStatus;
+	}
+
 	public int getScheduleWeekOfYear() {
 		return scheduleStartDate.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
 	}

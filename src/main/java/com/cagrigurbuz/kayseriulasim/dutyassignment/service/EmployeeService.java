@@ -57,6 +57,7 @@ public class EmployeeService {
 
         oldEmployee.setName(newEmployee.getName());
         oldEmployee.setRegion(newEmployee.getRegion());
+        oldEmployee.setMaxMonthlyWorkingHour(newEmployee.getMaxMonthlyWorkingHour());
         
         return employeeRepository.save(oldEmployee);
     }

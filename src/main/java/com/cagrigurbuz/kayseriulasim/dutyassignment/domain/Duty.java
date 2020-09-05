@@ -164,8 +164,20 @@ public class Duty {
 	public boolean isWeekDay() {
 		return startDateTime.get(ChronoField.DAY_OF_WEEK) < 6;
 	}	
+	
+	public boolean isWeekend() {
+		return startDateTime.get(ChronoField.DAY_OF_WEEK) > 5;
+	}	
 
-	public int penalt() {
+	public int getPenalty() {
 		return load.intValue()*priority;
 	}
+	
+	public boolean isNotAssigned() {
+		return getEmployee() == null;
+	}
+	
+	//TODO
+	//dutyLengthInMinutes
+	//dutyLengthInHours
 }
