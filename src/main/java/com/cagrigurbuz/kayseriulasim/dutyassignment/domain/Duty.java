@@ -2,8 +2,8 @@ package com.cagrigurbuz.kayseriulasim.dutyassignment.domain;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
-
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -158,6 +158,10 @@ public class Duty {
 		return employee.getRegion() == getRegion();
 	}
 	
+	public int getDutyLengthInMinutes() {
+		return (int) startDateTime.until(endDateTime, ChronoUnit.MINUTES);
+	}
+	
 	//we have totalWorkingHours in terms of hours, 7.5 hours for ex.
 	//the input always will be .5 or .0 fraction
 	//so getting int from that double is not a problem for rounding
@@ -202,5 +206,4 @@ public class Duty {
 	public boolean isNextWeekDuty(Duty duty) {
 		return duty.startDateTime.toLocalDate().plusDays(7).equals(this.getStartDateTime().toLocalDate());
 	}
-	
 }
