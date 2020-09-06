@@ -123,9 +123,9 @@ public class Schedule {
 			
 			//if schedule not before the given startDate
 			//AND
-			//if not after the endDate, schedule length in term of days is taken from the user
+			//if before the end date not including endDate
 			//for example, solve from the date X for Y days
-			if (!dutyStartDate.isBefore(scheduleStartDate) && !dutyStartDate.isAfter(scheduleEndDate)){
+			if (!dutyStartDate.isBefore(scheduleStartDate) && dutyStartDate.isBefore(scheduleEndDate)){
 				duty.setInCurrentSchedule(true);
 			}
 		}
