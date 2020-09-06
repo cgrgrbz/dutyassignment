@@ -11,31 +11,39 @@ import static org.optaplanner.core.api.score.stream.ConstraintCollectors.*;
 
 import java.time.temporal.ChronoUnit;
 import com.cagrigurbuz.kayseriulasim.dutyassignment.domain.Duty;
+import com.google.common.base.Objects;
 
 public class SolverConstraintProvider implements ConstraintProvider {
 
 	@Override
 	public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[] {
-        		assignFromSameRegion(constraintFactory), //OK - HARD
-        		assignEveryDuty(constraintFactory), //OK
-        		oneDutyPerDay(constraintFactory), //OK
-        		assignSameDutiesForTheSameWeek(constraintFactory), //OK - HARD
-        		breakBetweenTwoConsecutiveDutyAtLeast12Hours(constraintFactory), //OK
-        		consecutiveDutyShouldBeSameType(constraintFactory), //OK
-        		noTwoConsecutiveEveningDuties(constraintFactory), //OK - HARD
-        		noSameDutyConsecutiveWeek(constraintFactory), //OK
-        		fairDutyAssignmentByCount(constraintFactory), //OK
-        		fairDutyTypeAssignmentByCount(constraintFactory), //OK
-        		noMoreThanMaximumWorkingHour(constraintFactory), //OK
+        		assignFromSameRegion(constraintFactory),
+        		assignEveryDuty(constraintFactory),
+        		oneDutyPerDay(constraintFactory),
+        		assignSameDutiesForTheSameWeek(constraintFactory),
+        		breakBetweenTwoConsecutiveDutyAtLeast12Hours(constraintFactory),
+        		consecutiveDutyShouldBeSameType(constraintFactory),
+        		noTwoConsecutiveEveningDuties(constraintFactory),
+        		noSameDutyConsecutiveWeek(constraintFactory),
+        		weekdayFairDutyNameAssignmentByCount(constraintFactory),
+        		weekendFairDutyNameAssignmentByCount(constraintFactory),
+        		weekdayFairDutyTypeAssignmentByCount(constraintFactory),
+        		weekendFairDutyTypeAssignmentByCount(constraintFactory),
+        		noMoreThanMaximumWorkingHour(constraintFactory),
         };
 	}
 
+	
+	//TODO
+	//solver should only look for previous assignments UPTO the schedule start date, no more
+	//BUT only penalize the ones in current schedule
+	//OR?? with another domain definition, count them not directly, not in the constraint
+	
 	// returns only the assigned duties from all duties
     private static UniConstraintStream<Duty> getAssignedDutyConstraintStream(ConstraintFactory constraintFactory) {
         return constraintFactory.fromUnfiltered(Duty.class)
-                .filter(duty -> !duty.isNotAssigned())
-                .filter(duty -> duty.getType() != "G"); //-> G is garage duties, which realized everyday, so will add another constraint for it separately
+                .filter(duty -> !duty.isNotAssigned());
     }
     
     //OK
@@ -50,27 +58,65 @@ public class SolverConstraintProvider implements ConstraintProvider {
 				.penalizeLong("Employee monthly working hour cannot exceed the employee's max hour!", 
 						HardMediumSoftLongScore.ONE_MEDIUM,(employee, month, totalAssignedDutyWorkingHourForMonth) -> totalAssignedDutyWorkingHourForMonth - employee.getMaxMonthlyWorkingInMinutes()); //
 	}
-		
+	
+    ///////////////////////////
+    ///FAIR DUTY ASSIGNMENTS///
+    ///////////////////////////
+    ///////////START///////////
+    ///////////////////////////
+	
+	//TODO
+	//COUNTIN ONLY PREVIOUS DUTIES, not in current Schedule
+	//BUT PENALIZE THE NEW DUTIES
+
 	//OK
+	//SAY THIS IS FOR WEEKDAYS
 	//fairly assign duties by the count of duty type
-	private Constraint fairDutyTypeAssignmentByCount(ConstraintFactory constraintFactory) {
-		return getAssignedDutyConstraintStream(constraintFactory)
-    	        .groupBy(
-    	        		duty -> Pair.of(duty.getEmployee(), duty.getType()), count())
-    	        .filter((employee, dutyTypeCount) -> dutyTypeCount>1) //no need to penalize all duties at first assignments
-    	        .penalizeLong("Assign duties fairly by dutyType assignment count", HardMediumSoftLongScore.ONE_SOFT, (employee, dutyTypeCount) -> dutyTypeCount);
+	private Constraint weekdayFairDutyTypeAssignmentByCount(ConstraintFactory constraintFactory) {
+		return constraintFactory.fromUnfiltered(Duty.class)
+    	        .filter(duty -> duty.isWeekDay())
+				.groupBy(Duty::getEmployee, Duty::getType, count()) //count duty types in previous assignments
+    	        .filter((employee, dutyType, weekdayDutyTypeCount) -> weekdayDutyTypeCount/5 > 1 ) //no need to penalize all duties at first assignments
+    	        .penalizeLong("Assign duties fairly on weekdays by dutyType assignment count", HardMediumSoftLongScore.ONE_SOFT, (employee, dutyType, weekdayDutyTypeCount) -> weekdayDutyTypeCount/5);
+    }
+	
+	//OK
+	//SAY THIS IS FOR WEEKDAYS
+	//fairly assign duties by the count of duty type
+	private Constraint weekendFairDutyTypeAssignmentByCount(ConstraintFactory constraintFactory) {
+		return constraintFactory.fromUnfiltered(Duty.class)
+    	        .filter(duty -> duty.isWeekend())
+				.groupBy(Duty::getEmployee, Duty::getType, count()) //count duty types in previous assignments
+    	        .filter((employee, dutyType, weekendDutyTypeCount) -> weekendDutyTypeCount > 1 ) //no need to penalize all duties at first assignments
+    	        .penalizeLong("Assign duties fairly on weekends by dutyType assignment count", HardMediumSoftLongScore.ONE_SOFT, (employee, dutyType, weekendDutyTypeCount) -> weekendDutyTypeCount);
     }
 
 	//OK
-	//fairly assign duties by the count of them
-    private Constraint fairDutyAssignmentByCount(ConstraintFactory constraintFactory) {
+	//fairly assign duties on Weekdays by the count of them
+    private Constraint weekdayFairDutyNameAssignmentByCount(ConstraintFactory constraintFactory) {
 		return getAssignedDutyConstraintStream(constraintFactory)
-    	        .groupBy(
-    	        		duty -> Pair.of(duty.getEmployee(), duty.getName()), count())
-    	        .filter((employee, dutyCount) -> dutyCount>1) //no need to penalize all duties at first assignments
-    	        .penalizeLong("Assign duties fairly by duty assignment count", HardMediumSoftLongScore.ONE_SOFT, (employee, dutyCount) -> dutyCount);
+				.filter(duty -> duty.isWeekDay())
+				.groupBy(Duty::getEmployee, Duty::getName, count()) //count duty types in previous assignments
+    	        .filter((employee, dutyName, weekdayDutyNameCount) -> weekdayDutyNameCount/5 > 1) //no need to penalize all duties at first assignments
+    	        .penalizeLong("Assign duties fairly on weekdays by dutyName assignment count", HardMediumSoftLongScore.ONE_SOFT, (employee, dutyName, weekdayDutyNameCount) -> weekdayDutyNameCount/5);
+    }
+    
+	//OK
+	//fairly assign duties on Weekends by the count of them
+    private Constraint weekendFairDutyNameAssignmentByCount(ConstraintFactory constraintFactory) {
+		return getAssignedDutyConstraintStream(constraintFactory)
+				.filter(duty -> duty.isWeekend())
+				.groupBy(Duty::getEmployee, Duty::getName, count()) //count duty types in previous assignments
+    	        .filter((employee, dutyName, weekendDutyNameCount) -> weekendDutyNameCount > 1) //no need to penalize all duties at first assignments
+    	        .penalizeLong("Assign duties fairly on weekends by dutyName assignment count", HardMediumSoftLongScore.ONE_SOFT, (employee, dutyName, weekendDutyNameCount) -> weekendDutyNameCount);
     }
 
+    ///////////////////////////
+    ///FAIR DUTY ASSIGNMENTS///
+    ///////////////////////////
+    ////////////END////////////
+    ///////////////////////////
+    
     //OK
 	//Do not assign same duty consecutive weeks
 	private Constraint noSameDutyConsecutiveWeek(ConstraintFactory constraintFactory) {
@@ -96,7 +142,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
 				.filter((d1, d2) -> d2.isNextWeekDuty(d1))
 				.filter((d1, d2) -> d1.getType() == "A" && d2.getType() == "A")
 				//.filter((d1, d2) -> d1.getType() == d2.getType())
-				.penalizeLong("No consecutive week night shift assignment", HardMediumSoftLongScore.ONE_MEDIUM, (d1, d2) -> d2.getDutyLengthInMinutes());
+				.penalizeLong("No consecutive week night shift assignment", HardMediumSoftLongScore.ONE_SOFT, (d1, d2) -> d2.getDutyLengthInMinutes());
 	}
 
 	//OK
@@ -110,15 +156,18 @@ public class SolverConstraintProvider implements ConstraintProvider {
 						Joiners.equal(Duty::getEmployee),
 						Joiners.equal(Duty::isInCurrentSchedule)) //only the ones in new schedule time period
 				.filter((d1, d2) -> d2.isNextDayDuty(d1))
+				.filter((d1, d2) -> !d1.getName().equals(d2.getName()))
 				.filter((d1, d2) -> d1.getType()!= d2.getType())
-				.penalizeLong("Assigned consecutive duty types should be same", HardMediumSoftLongScore.ONE_MEDIUM, (d1, d2) -> d2.getDutyLengthInMinutes());
+				.penalizeLong("Assigned consecutive duty types should be same", HardMediumSoftLongScore.ONE_SOFT, (d1, d2) -> d2.getDutyLengthInMinutes());
 	}
 
 	//OK
 	//assign employee from same region!
 	private Constraint assignFromSameRegion(ConstraintFactory constraintFactory) {
 		return getAssignedDutyConstraintStream(constraintFactory)
-				.filter((duty) -> !duty.employeeIsInSameRegion())
+				.filter(
+						(duty) -> !duty.getEmployee().getRegion().equals(duty.getRegion())
+				)
 				.penalizeLong("Assign employee from same region", HardMediumSoftLongScore.ONE_MEDIUM, duty-> duty.getDutyLengthInMinutes()*duty.getPenalty());
 	}
     
@@ -127,7 +176,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
     Constraint assignEveryDuty(ConstraintFactory constraintFactory) {
         return constraintFactory.fromUnfiltered(Duty.class)
         		.filter(duty -> duty.isNotAssigned() && duty.isInCurrentSchedule())
-                .penalizeLong("Assign every duty.", HardMediumSoftLongScore.ONE_MEDIUM, duty -> duty.getPenalty() + duty.getTotalWorkingHour().intValue());
+                .penalizeLong("Assign every duty.", HardMediumSoftLongScore.ONE_MEDIUM, duty-> duty.getDutyLengthInMinutes()*duty.getPenalty()+duty.getLoad().intValue() + 1);
     }
     
     //OK
@@ -144,11 +193,11 @@ public class SolverConstraintProvider implements ConstraintProvider {
     Constraint oneDutyPerDay(ConstraintFactory constraintFactory) {
     	return getAssignedDutyConstraintStream(constraintFactory)
     			.join(Duty.class,
-    					Joiners.equal(Duty::getEmployee, Duty::getEmployee),
-    					Joiners.equal(Duty::getDutyDayOfYear, Duty::getDutyDayOfYear),
-    					Joiners.equal(Duty::isInCurrentSchedule, Duty::isInCurrentSchedule))
+    					Joiners.equal(Duty::getEmployee),
+    					Joiners.equal(Duty::getDutyDayOfYear),
+    					Joiners.equal(Duty::isInCurrentSchedule))
     			.filter((d1, d2) -> !d1.equals(d2))
-    	        .penalize("No more than one duty per day.", HardMediumSoftLongScore.ONE_HARD);
+    	        .penalizeLong("No more than one duty per day.", HardMediumSoftLongScore.ONE_HARD, (d1, d2) -> d2.getDutyLengthInMinutes());
     }
     
     //OK
@@ -160,7 +209,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
                         Joiners.lessThan(Duty::getEndDateTime, Duty::getStartDateTime))
                 .filter((d1, d2) -> !d1.equals(d2))
                 .filter((d1, d2) -> d1.getEndDateTime().until(d2.getStartDateTime(), ChronoUnit.HOURS) < 12)
-                .penalizeLong("At least 12 Hours break after the Duty.", HardMediumSoftLongScore.ONE_SOFT, (d1, d2) -> (int) (720 - d1.getEndDateTime().until(d2.getStartDateTime(), ChronoUnit.MINUTES)));
+                .penalizeLong("At least 12 Hours break after the Duty.", HardMediumSoftLongScore.ONE_MEDIUM, (d1, d2) -> (int) (720 - d1.getEndDateTime().until(d2.getStartDateTime(), ChronoUnit.MINUTES)));
     }
     
     //OK
@@ -169,10 +218,9 @@ public class SolverConstraintProvider implements ConstraintProvider {
     	return getAssignedDutyConstraintStream(constraintFactory)
     			.join(Duty.class,
     					Joiners.equal(Duty::getName),
-    					Joiners.equal(Duty::isWeekDay),
     					Joiners.equal(Duty::getDutyWeekOfYear))
-    			.filter((duty, otherDuty) -> !duty.equals(otherDuty))
+    			.filter((duty, otherDuty) -> !Objects.equal(duty, otherDuty))
     			.filter((duty, otherDuty) -> duty.getEmployee() != otherDuty.getEmployee())
-    	        .penalizeLong("Same duty at weekdays!.", HardMediumSoftLongScore.ONE_MEDIUM, (duty, otherDuty) -> duty.getDutyLengthInMinutes()*duty.getDutyLengthInMinutes());
+    	        .penalizeLong("Same duty at weekdays!.", HardMediumSoftLongScore.ONE_SOFT, (duty, otherDuty) -> duty.getDutyLengthInMinutes()*duty.getDutyLengthInMinutes());
     }
 }
