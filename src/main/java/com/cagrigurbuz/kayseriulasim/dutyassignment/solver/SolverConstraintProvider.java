@@ -17,13 +17,13 @@ public class SolverConstraintProvider implements ConstraintProvider {
 	@Override
 	public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
         return new Constraint[] {
-        		assignFromSameRegion(constraintFactory), //OK
+        		assignFromSameRegion(constraintFactory), //OK - HARD
         		assignEveryDuty(constraintFactory), //OK
         		oneDutyPerDay(constraintFactory), //OK
-        		assignSameDutiesForTheSameWeek(constraintFactory), //OK
+        		assignSameDutiesForTheSameWeek(constraintFactory), //OK - HARD
         		breakBetweenTwoConsecutiveDutyAtLeast12Hours(constraintFactory), //OK
         		consecutiveDutyShouldBeSameType(constraintFactory), //OK
-        		noTwoConsecutiveEveningDuties(constraintFactory), //OK
+        		noTwoConsecutiveEveningDuties(constraintFactory), //OK - HARD
         		noSameDutyConsecutiveWeek(constraintFactory), //OK
         		fairDutyAssignmentByCount(constraintFactory), //OK
         		fairDutyTypeAssignmentByCount(constraintFactory), //OK
@@ -34,7 +34,8 @@ public class SolverConstraintProvider implements ConstraintProvider {
 	// returns only the assigned duties from all duties
     private static UniConstraintStream<Duty> getAssignedDutyConstraintStream(ConstraintFactory constraintFactory) {
         return constraintFactory.fromUnfiltered(Duty.class)
-                .filter(duty -> !duty.isNotAssigned());
+                .filter(duty -> !duty.isNotAssigned())
+                .filter(duty -> duty.getType() != "G"); //-> G is garage duties, which realized everyday, so will add another constraint for it separately
     }
     
     //OK
@@ -47,7 +48,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
 						sum((duty -> duty.totalWorkingHourInMinutes())))
 				.filter((employee, month, totalAssignedDutyWorkingHourForMonth) -> totalAssignedDutyWorkingHourForMonth > employee.getMaxMonthlyWorkingInMinutes())
 				.penalizeLong("Employee monthly working hour cannot exceed the employee's max hour!", 
-						HardMediumSoftLongScore.ONE_MEDIUM, (employee, month, totalAssignedDutyWorkingHourForMonth) -> totalAssignedDutyWorkingHourForMonth*100); //
+						HardMediumSoftLongScore.ONE_MEDIUM,(employee, month, totalAssignedDutyWorkingHourForMonth) -> totalAssignedDutyWorkingHourForMonth - employee.getMaxMonthlyWorkingInMinutes()); //
 	}
 		
 	//OK
@@ -95,7 +96,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
 				.filter((d1, d2) -> d2.isNextWeekDuty(d1))
 				.filter((d1, d2) -> d1.getType() == "A" && d2.getType() == "A")
 				//.filter((d1, d2) -> d1.getType() == d2.getType())
-				.penalize("No consecutive week night shift assignment", HardMediumSoftLongScore.ONE_HARD);
+				.penalize("No consecutive week night shift assignment", HardMediumSoftLongScore.ONE_MEDIUM);
 	}
 
 	//OK
@@ -118,7 +119,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
 	private Constraint assignFromSameRegion(ConstraintFactory constraintFactory) {
 		return getAssignedDutyConstraintStream(constraintFactory)
 				.filter((duty) -> !duty.employeeIsInSameRegion())
-				.penalize("Assign employee from same region", HardMediumSoftLongScore.ONE_HARD);
+				.penalize("Assign employee from same region", HardMediumSoftLongScore.ofMedium(1000));
 	}
     
     //OK
@@ -131,11 +132,22 @@ public class SolverConstraintProvider implements ConstraintProvider {
     
     //OK
     //Assign one duty per day
+//    Constraint oneDutyPerDay(ConstraintFactory constraintFactory) {
+//    	return getAssignedDutyConstraintStream(constraintFactory)
+//    	        .groupBy(
+//    	        		duty -> Pair.of(duty.getEmployee(), duty.getDutyDayOfYear()), count())
+//                .filter((employee, count) -> count > 1)
+//    	        .penalize("No more than one duty per day.", HardMediumSoftLongScore.ONE_HARD);
+//    }
+    
+  //Assign one duty per day
     Constraint oneDutyPerDay(ConstraintFactory constraintFactory) {
     	return getAssignedDutyConstraintStream(constraintFactory)
-    	        .groupBy(
-    	        		duty -> Pair.of(duty.getEmployee(), duty.getDutyDayOfYear()), count())
-                .filter((employee, count) -> count > 1)
+    			.join(Duty.class,
+    					Joiners.equal(Duty::getEmployee, Duty::getEmployee),
+    					Joiners.equal(Duty::getDutyDayOfYear, Duty::getDutyDayOfYear),
+    					Joiners.equal(Duty::isInCurrentSchedule, Duty::isInCurrentSchedule))
+    			.filter((d1, d2) -> !d1.equals(d2))
     	        .penalize("No more than one duty per day.", HardMediumSoftLongScore.ONE_HARD);
     }
     
@@ -161,6 +173,6 @@ public class SolverConstraintProvider implements ConstraintProvider {
     					Joiners.equal(Duty::getDutyWeekOfYear))
     			.filter((duty, otherDuty) -> !duty.equals(otherDuty))
     			.filter((duty, otherDuty) -> duty.getEmployee() != otherDuty.getEmployee())
-    	        .penalize("Same duty at weekdays!.", HardMediumSoftLongScore.ONE_HARD);
+    	        .penalize("Same duty at weekdays!.", HardMediumSoftLongScore.ofMedium(5));
     }
 }
