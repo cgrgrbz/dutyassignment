@@ -5,9 +5,11 @@ import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.cagrigurbuz.kayseriulasim.dutyassignment.domain.Employee;
 
+@Repository
 public interface EmployeeRepository extends CrudRepository<Employee, Long> {
 	
     @Query("select e from Employee e " +
@@ -18,7 +20,6 @@ public interface EmployeeRepository extends CrudRepository<Employee, Long> {
             "where e.id = :employeeId")
     Employee findEmployeeById(@Param("employeeId") Long id);
     
-    @Query("select e from Employee e " +
-            "where e.code = :employeeCode")
-    Employee findEmployeeByCode(@Param("employeeCode") String c);
+    @Query("select e from Employee e where e.code = :code")
+    Employee findEmployeeByCode(@Param("code") String code);
 }

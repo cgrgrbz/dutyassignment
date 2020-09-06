@@ -34,6 +34,11 @@ public class DutyService {
     public List<Duty> getDutyList() {
         return dutyRepository.findAll();
     }
+	
+	@Transactional
+    public List<Duty> getCurrentDutyList() {
+        return dutyRepository.findCurrentDuties();
+    }
 
     @Transactional
     public Duty addDuty(Duty duty) {
@@ -44,33 +49,55 @@ public class DutyService {
     public Duty updateDuty(Duty duty) {
         
     	Duty newDuty = duty;
-
+    	
     	Duty oldDuty = dutyRepository
                 .findById(newDuty.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Duty entity with ID (" + newDuty.getId() + ") not found."));
     	
     	oldDuty.setName(newDuty.getName());
     	oldDuty.setRegion(newDuty.getRegion());
+    	oldDuty.setType(newDuty.getType());
     	
     	oldDuty.setStartDateTime(newDuty.getStartDateTime());
     	oldDuty.setEndDateTime(newDuty.getEndDateTime());
+    	
+    	oldDuty.setEmployee(newDuty.getEmployee());
+
+    	oldDuty.setLoad(newDuty.getLoad());
+    	oldDuty.setPriority(newDuty.getPriority());
+    	oldDuty.setInCurrentSchedule(newDuty.isInCurrentSchedule());
+    	
+    	oldDuty.setTotalWorkingHour(newDuty.getTotalWorkingHour());
         
         return dutyRepository.save(oldDuty);
     }
     
     @Transactional
+    public List<Duty> updateDutyList(List<Duty> dutyList) {
+        
+    	for (Duty duty: dutyList) {
+    		updateDuty(duty);
+    	}
+    	
+    	return dutyRepository.findAll();
+    }
+    
+    @Transactional
     public List<Duty> importDutyFromExcel(InputStream excelInputStream) throws IOException {
+    	
+    	//TODO
+    	//Control here, what did I do?
     	
         List<Duty> excelDutyList = dutyListXLSXFileIO.getDutyListFromExcelFile(excelInputStream);
 
         final Set<String> addedDutySet = new HashSet<>();
         
         excelDutyList.stream().flatMap(duty -> {
-            if (addedDutySet.contains(duty.getName().toLowerCase())) {
-                // Duplicate Employee; already in the stream
+            if (addedDutySet.contains(duty.getId())) {
+                // Duplicate Duty; already in the stream
                 return Stream.empty();
             }
-            // Add employee to the stream
+            // Add duty to the stream
             addedDutySet.add(duty.getName().toLowerCase());
             return Stream.of(duty);
         }).forEach(duty -> {

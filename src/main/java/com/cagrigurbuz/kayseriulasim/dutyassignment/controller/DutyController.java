@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -53,6 +54,12 @@ public class DutyController {
 	public ResponseEntity<List<Duty>> addDutyFromExcelFile(@RequestParam("file") MultipartFile excelDataFile) throws IOException {
 		return new ResponseEntity<>(dutyService.importDutyFromExcel(excelDataFile.getInputStream()),
 				HttpStatus.OK);
+	}
+	
+	@ApiOperation("Get the duties only from the current schedule period, which is determined by starting solver.")
+	@GetMapping("/current")
+	public ResponseEntity<List<Duty>> getCurrentList() {
+		return new ResponseEntity<>(dutyService.getCurrentDutyList(), HttpStatus.OK);
 	}
 
 }

@@ -9,6 +9,7 @@ import java.util.stream.Stream;
 
 import javax.persistence.EntityNotFoundException;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ public class EmployeeService {
 	
 	private final EmployeeListXLSXFileIO employeeListXLSXFileIO;
 	
+	@Autowired
 	public EmployeeService(EmployeeRepository employeeRepository, EmployeeListXLSXFileIO employeeListXLSXFileIO ) {
 		super();
 		this.employeeRepository = employeeRepository;
@@ -32,6 +34,11 @@ public class EmployeeService {
     @Transactional
     public List<Employee> getEmployeeList() {
         return employeeRepository.findAll();
+    }
+    
+    @Transactional
+    public Employee getEmployeeByCode(String employeeCode) {      
+        return employeeRepository.findEmployeeByCode(employeeCode);
     }
 
     @Transactional
@@ -50,6 +57,7 @@ public class EmployeeService {
 
         oldEmployee.setName(newEmployee.getName());
         oldEmployee.setRegion(newEmployee.getRegion());
+        oldEmployee.setMaxMonthlyWorkingHour(newEmployee.getMaxMonthlyWorkingHour());
         
         return employeeRepository.save(oldEmployee);
     }

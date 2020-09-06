@@ -8,13 +8,14 @@ import org.springframework.data.repository.query.Param;
 import com.cagrigurbuz.kayseriulasim.dutyassignment.domain.Duty;
 
 public interface DutyRepository extends CrudRepository<Duty, Long> {
-	
-    @Query("select d from Duty d " +
-            "order by d.id")
-    List<Duty> findAll();
-	    
-    @Query("select d from Duty d " +
-            "where d.id = :dutyId")
-    Duty findDutyById(@Param("dutyId") Long id);
-    
+
+	@Query("select d from Duty d order by d.id")
+	List<Duty> findAll();
+
+	@Query("select d from Duty d where d.id = :dutyId")
+	Duty findDutyById(@Param("dutyId") Long id);
+
+	@Query("select d from Duty d where d.inCurrentSchedule = true")
+	List<Duty> findCurrentDuties();
+
 }

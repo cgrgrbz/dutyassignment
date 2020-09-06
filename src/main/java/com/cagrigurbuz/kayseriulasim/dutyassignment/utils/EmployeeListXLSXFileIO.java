@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -19,6 +21,8 @@ public class EmployeeListXLSXFileIO {
 		try (Workbook workbook = new XSSFWorkbook(excelFileStream)) {
 
 			Sheet worksheet = workbook.getSheetAt(0);
+			
+			DataFormatter formatter = new DataFormatter();
 
 			List<Employee> toSave = new ArrayList<>(worksheet.getPhysicalNumberOfRows() - 1);
 
@@ -31,9 +35,10 @@ public class EmployeeListXLSXFileIO {
 				}
 
 				Employee employee = new Employee();
-				employee.setCode(row.getCell(0).getStringCellValue());
-				employee.setName(row.getCell(1).getStringCellValue());
-				employee.setRegion(row.getCell(2).getStringCellValue());
+				employee.setCode(formatter.formatCellValue(row.getCell(0)));
+				employee.setName(formatter.formatCellValue(row.getCell(1)));
+				employee.setRegion(formatter.formatCellValue(row.getCell(2)));
+				employee.setMaxMonthlyWorkingHour(row.getCell(3).getNumericCellValue());
 				
 				toSave.add(employee);
 			}

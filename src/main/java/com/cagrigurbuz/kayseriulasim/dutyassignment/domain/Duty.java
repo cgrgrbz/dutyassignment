@@ -1,8 +1,10 @@
 package com.cagrigurbuz.kayseriulasim.dutyassignment.domain;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-
+import java.time.temporal.IsoFields;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -14,7 +16,7 @@ import org.optaplanner.core.api.domain.lookup.PlanningId;
 import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 @Entity
-@PlanningEntity
+@PlanningEntity(pinningFilter = DutySelectionFilter.class)
 public class Duty {
 	
 	@PlanningId
@@ -22,29 +24,38 @@ public class Duty {
     @GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	
-	private String name, region;
-	private int taskCount;
+	private String name, region, type;
 	
-	@ManyToOne
+	private Double load, totalWorkingHour;
+	
+	private int priority;
+	
+	@ManyToOne(cascade=CascadeType.ALL)
 	@PlanningVariable(valueRangeProviderRefs = "employeeRange", nullable = true)
 	private Employee employee;
 	
 	private LocalDateTime startDateTime, endDateTime;
-		
+	
+	private boolean inCurrentSchedule;
+	
 	public Duty() {
 		
 	}
 
-	public Duty(Long id, String name, String region, int taskCount, Employee employee, LocalDateTime startDateTime,
-			LocalDateTime endDateTime) {
+	public Duty(Long id, String name, String region, String type, Double load, Employee employee,
+			LocalDateTime startDateTime, LocalDateTime endDateTime, boolean inCurrentSchedule, int priority, Double totalWorkingHour) {
 		super();
 		this.id = id;
 		this.name = name;
 		this.region = region;
-		this.taskCount = taskCount;
+		this.type = type;
+		this.load = load;
 		this.employee = employee;
 		this.startDateTime = startDateTime;
 		this.endDateTime = endDateTime;
+		this.inCurrentSchedule = inCurrentSchedule;
+		this.priority = priority;
+		this.totalWorkingHour = totalWorkingHour;
 	}
 
 	public Long getId() {
@@ -71,12 +82,20 @@ public class Duty {
 		this.region = region;
 	}
 
-	public int getTaskCount() {
-		return taskCount;
+	public String getType() {
+		return type;
 	}
 
-	public void setTaskCount(int taskCount) {
-		this.taskCount = taskCount;
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public Double getLoad() {
+		return load;
+	}
+
+	public void setLoad(Double load) {
+		this.load = load;
 	}
 
 	public Employee getEmployee() {
@@ -102,19 +121,89 @@ public class Duty {
 	public void setEndDateTime(LocalDateTime endDateTime) {
 		this.endDateTime = endDateTime;
 	}
-	
+
+	public boolean isInCurrentSchedule() {
+		return inCurrentSchedule;
+	}
+
+	public void setInCurrentSchedule(boolean inCurrentSchedule) {
+		this.inCurrentSchedule = inCurrentSchedule;
+	}
+
+	public int getPriority() {
+		return priority;
+	}
+
+	public void setPriority(int priority) {
+		this.priority = priority;
+	}
+
+	public Double getTotalWorkingHour() {
+		return totalWorkingHour;
+	}
+
+	public void setTotalWorkingHour(Double totalWorkingHour) {
+		this.totalWorkingHour = totalWorkingHour;
+	}
+
 	@Override
 	public String toString() {
-		return "Duty [id=" + id + ", name=" + name + ", region=" + region + ", taskCount=" + taskCount + ", employee="
-				+ employee + ", startDateTime=" + startDateTime + ", endDateTime=" + endDateTime + "]";
+		return "Duty [id=" + id + ", name=" + name + ", region=" + region + ", type=" + type + ", load=" + load
+				+ ", totalWorkingHour=" + totalWorkingHour + ", priority=" + priority + ", employee=" + employee
+				+ ", startDateTime=" + startDateTime + ", endDateTime=" + endDateTime + ", isItCurrentDutyToBeAssigned="
+				+ inCurrentSchedule + "]";
 	}
 
 	public boolean employeeIsInSameRegion() {
 		return employee.getRegion() == getRegion();
 	}
 	
-	public Long dutyLengthInMinutes() {
-		return startDateTime.until(endDateTime, ChronoUnit.MINUTES);
+	public int getDutyLengthInMinutes() {
+		return (int) startDateTime.until(endDateTime, ChronoUnit.MINUTES);
 	}
+	
+	//we have totalWorkingHours in terms of hours, 7.5 hours for ex.
+	//the input always will be .5 or .0 fraction
+	//so getting int from that double is not a problem for rounding
+	//BUT
+	//will probably directly get minute values from data later
+	public int totalWorkingHourInMinutes() {
+		return (int) (totalWorkingHour*60);
+	}
+	
+	public int getDutyMonthOfYear() {
+		return startDateTime.getMonthValue();
+	}
+	
+	public int getDutyWeekOfYear() {
+		return startDateTime.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+	}
+	
+	public int getDutyDayOfYear() {
+		return startDateTime.get(ChronoField.DAY_OF_YEAR);
+	}
+	
+	public boolean isWeekDay() {
+		return startDateTime.get(ChronoField.DAY_OF_WEEK) < 6;
+	}	
+	
+	public boolean isWeekend() {
+		return startDateTime.get(ChronoField.DAY_OF_WEEK) > 5;
+	}	
 
+	public int getPenalty() {
+		return load.intValue()*priority;
+	}
+	
+	public boolean isNotAssigned() {
+		return getEmployee() == null;
+	}
+	
+	public boolean isNextDayDuty(Duty duty) {
+		return duty.startDateTime.toLocalDate().plusDays(1).equals(this.getStartDateTime().toLocalDate());
+	}
+	
+	public boolean isNextWeekDuty(Duty duty) {
+		return duty.startDateTime.toLocalDate().plusDays(7).equals(this.getStartDateTime().toLocalDate());
+	}
 }

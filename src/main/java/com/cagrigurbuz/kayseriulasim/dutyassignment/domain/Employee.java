@@ -19,16 +19,19 @@ public class Employee {
 	private String name;
 	private String region;
 	
+	private double maxMonthlyWorkingHour;
+	
 	public Employee() {
 		
 	}
 	
-	public Employee(Long id, String code, String name, String region) {
+	public Employee(Long id, String code, String name, String region, double maxMonthlyWorkingHour) {
 		super();
 		this.id = id;
 		this.code = code;
 		this.name = name;
 		this.region = region;
+		this.maxMonthlyWorkingHour = maxMonthlyWorkingHour;
 	}
 	
 	public Long getId() {
@@ -63,6 +66,18 @@ public class Employee {
 		this.code = code;
 	}
 
+	public double getMaxMonthlyWorkingHour() {
+		return maxMonthlyWorkingHour;
+	}
+
+	public void setMaxMonthlyWorkingHour(double maxMonthlyWorkingHour) {
+		this.maxMonthlyWorkingHour = maxMonthlyWorkingHour;
+	}
+	
+	public int getMaxMonthlyWorkingInMinutes() {
+		return (int) (maxMonthlyWorkingHour*60);
+	}
+	
 	@Override
 	public String toString() {
 		return "Employee [id=" + id + ", code=" + code + ", name=" + name + ", region=" + region + "]";
