@@ -36,8 +36,9 @@ public class SolverConstraintProvider implements ConstraintProvider {
 
 	
 	//TODO
-	//solver should only look for previous assignments UPTO end of the schedule
-	//in case we want to schedule in between time periods	
+	//solver should only look for previous assignments UPTO the schedule start date, no more
+	//BUT only penalize the ones in current schedule
+	//OR?? with another domain definition, count them not directly, not in the constraint
 	
 	// returns only the assigned duties from all duties
     private static UniConstraintStream<Duty> getAssignedDutyConstraintStream(ConstraintFactory constraintFactory) {
