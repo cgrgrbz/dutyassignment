@@ -80,7 +80,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
 						Joiners.equal(Duty::getName),
 						Joiners.equal(Duty::isInCurrentSchedule)) //only the ones in new schedule time period
 				.filter((d1, d2) -> d2.isNextWeekDuty(d1))
-				.penalize("No consecutive week same duty assignment", HardMediumSoftLongScore.ONE_MEDIUM);
+				.penalizeLong("No consecutive week same duty assignment", HardMediumSoftLongScore.ONE_MEDIUM, (d1, d2) -> d2.getDutyLengthInMinutes());
 	}
 
 	//OK
@@ -96,7 +96,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
 				.filter((d1, d2) -> d2.isNextWeekDuty(d1))
 				.filter((d1, d2) -> d1.getType() == "A" && d2.getType() == "A")
 				//.filter((d1, d2) -> d1.getType() == d2.getType())
-				.penalize("No consecutive week night shift assignment", HardMediumSoftLongScore.ONE_MEDIUM);
+				.penalizeLong("No consecutive week night shift assignment", HardMediumSoftLongScore.ONE_MEDIUM, (d1, d2) -> d2.getDutyLengthInMinutes());
 	}
 
 	//OK
@@ -111,7 +111,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
 						Joiners.equal(Duty::isInCurrentSchedule)) //only the ones in new schedule time period
 				.filter((d1, d2) -> d2.isNextDayDuty(d1))
 				.filter((d1, d2) -> d1.getType()!= d2.getType())
-				.penalize("Assigned consecutive duty types should be same", HardMediumSoftLongScore.ONE_MEDIUM);
+				.penalizeLong("Assigned consecutive duty types should be same", HardMediumSoftLongScore.ONE_MEDIUM, (d1, d2) -> d2.getDutyLengthInMinutes());
 	}
 
 	//OK
@@ -119,7 +119,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
 	private Constraint assignFromSameRegion(ConstraintFactory constraintFactory) {
 		return getAssignedDutyConstraintStream(constraintFactory)
 				.filter((duty) -> !duty.employeeIsInSameRegion())
-				.penalize("Assign employee from same region", HardMediumSoftLongScore.ofMedium(1000));
+				.penalizeLong("Assign employee from same region", HardMediumSoftLongScore.ONE_MEDIUM, duty-> duty.getDutyLengthInMinutes()*duty.getPenalty());
 	}
     
     //OK
@@ -127,7 +127,7 @@ public class SolverConstraintProvider implements ConstraintProvider {
     Constraint assignEveryDuty(ConstraintFactory constraintFactory) {
         return constraintFactory.fromUnfiltered(Duty.class)
         		.filter(duty -> duty.isNotAssigned() && duty.isInCurrentSchedule())
-                .penalizeLong("Assign every duty.", HardMediumSoftLongScore.ONE_MEDIUM, duty -> duty.getPenalty());
+                .penalizeLong("Assign every duty.", HardMediumSoftLongScore.ONE_MEDIUM, duty -> duty.getPenalty() + duty.getTotalWorkingHour().intValue());
     }
     
     //OK
@@ -173,6 +173,6 @@ public class SolverConstraintProvider implements ConstraintProvider {
     					Joiners.equal(Duty::getDutyWeekOfYear))
     			.filter((duty, otherDuty) -> !duty.equals(otherDuty))
     			.filter((duty, otherDuty) -> duty.getEmployee() != otherDuty.getEmployee())
-    	        .penalize("Same duty at weekdays!.", HardMediumSoftLongScore.ofMedium(5));
+    	        .penalizeLong("Same duty at weekdays!.", HardMediumSoftLongScore.ONE_MEDIUM, (duty, otherDuty) -> duty.getDutyLengthInMinutes()*duty.getDutyLengthInMinutes());
     }
 }
