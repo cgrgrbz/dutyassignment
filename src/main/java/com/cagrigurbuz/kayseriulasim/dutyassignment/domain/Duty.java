@@ -1,5 +1,6 @@
 package com.cagrigurbuz.kayseriulasim.dutyassignment.domain;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
@@ -205,5 +206,13 @@ public class Duty {
 	
 	public boolean isNextWeekDuty(Duty duty) {
 		return duty.startDateTime.toLocalDate().plusDays(7).equals(this.getStartDateTime().toLocalDate());
+	}
+	
+	public int getDayOfWeekValue() {
+		return startDateTime.getDayOfWeek().getValue();
+	}
+	
+	public LocalDate getStartDate() {
+		return startDateTime.toLocalDate();
 	}
 }
