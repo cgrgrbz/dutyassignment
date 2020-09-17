@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import org.optaplanner.core.api.domain.lookup.PlanningId;
 
 @Entity
-public class Employee {
+public class Employee implements Comparable<Employee> {
 	
 	@PlanningId
 	@Id
@@ -81,6 +81,11 @@ public class Employee {
 	@Override
 	public String toString() {
 		return "Employee [id=" + id + ", code=" + code + ", name=" + name + ", region=" + region + "]";
+	}
+
+	@Override
+	public int compareTo(Employee employee) {
+		return code.compareTo(employee.getCode());
 	}
 
 }
