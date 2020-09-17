@@ -156,7 +156,7 @@ public class Duty {
 	}
 
 	public boolean employeeIsInSameRegion() {
-		return employee.getRegion() == getRegion();
+		return employee.getRegion().equals(region);
 	}
 	
 	public int getDutyLengthInMinutes() {
