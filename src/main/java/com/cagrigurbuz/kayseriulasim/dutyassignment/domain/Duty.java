@@ -18,7 +18,7 @@ import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 @Entity
 @PlanningEntity(pinningFilter = DutySelectionFilter.class)
-public class Duty {
+public class Duty{
 	
 	@PlanningId
 	@Id
@@ -213,6 +213,10 @@ public class Duty {
 	}
 	
 	public LocalDate getStartDate() {
+		return startDateTime.toLocalDate();
+	}
+	
+	public LocalDate getEndDate() {
 		return startDateTime.toLocalDate();
 	}
 }
