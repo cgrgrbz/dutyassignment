@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver>
   <scoreDirectorFactory>
-    <scoreDrl>DutyAssignmentRules.drl</scoreDrl>
+    <scoreDrl>com\cagrigurbuz\kayseriulasim\dutyassignment\DutyAssignmentRules.drl</scoreDrl>
   </scoreDirectorFactory>
 </solver>
