@@ -81,10 +81,10 @@ public class DutyListXLSXFileIO {
 				duty.setTotalWorkingHour(totalWorkingHour);
 
 				// if it's an old duty (not in current schedule) it's might have an employee
-				// so we can will use it for fair duty assignments
+				// so we will use it for fair duty assignments
 				if (row.getCell(2) != null) {
 					employeeCode = row.getCell(2).getStringCellValue();
-					employeeName = row.getCell(3).getStringCellValue();
+					//employeeName = row.getCell(3).getStringCellValue();
 										
 					Employee employee = employeeService.getEmployeeByCode(employeeCode);
 					
