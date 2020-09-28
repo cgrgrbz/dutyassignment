@@ -116,8 +116,9 @@ public class Schedule {
 	
 	public void setCurrentDutyFlag() {
 		
-		//will do it streams, for performance on big datasets.
 		for(Duty duty : dutyList) {
+			
+			duty.setInCurrentSchedule(false); // -> set all other duties, that we might before set as true, to false.
 			
 			LocalDate dutyStartDate = duty.getStartDateTime().toLocalDate();
 			

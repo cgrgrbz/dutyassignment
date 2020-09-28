@@ -1,0 +1,293 @@
+//created on: Sep 14, 2020
+package com.cagrigurbuz.kayseriulasim.dutyassignment.controller;
+	dialect "java"
+
+//list any import classes here.
+import java.time.temporal.ChronoUnit;
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.temporal.IsoFields;
+import java.util.Collection;
+import java.util.Map;
+import java.util.HashMap;
+
+import org.optaplanner.core.api.score.buildin.hardmediumsoftlong.HardMediumSoftLongScoreHolder;
+
+import com.cagrigurbuz.kayseriulasim.dutyassignment.domain.*;
+import com.cagrigurbuz.kayseriulasim.dutyassignment.solver.*;
+
+
+//declare any global variables here
+global HardMediumSoftLongScoreHolder scoreHolder;
+
+
+rule "Assign every duty"
+    when
+    	$d : Duty(
+    		isInCurrentSchedule(),
+    		employee == null,
+    		$penalty : getDutyLengthInMinutes() * getPenalty() + getLoad().intValue() + 1
+    	)
+    then
+        scoreHolder.addMediumConstraintMatch(kcontext, -$penalty);
+end
+
+rule "One duty per day"
+	when
+		$d1 : Duty(
+			employee != null,
+			$e : employee,
+			$date : getStartDate()
+		)
+		$d2 : Duty(
+			$d1 != this,
+			employee == $e,
+			$date == getStartDate(),
+			$penalty : getDutyLengthInMinutes()
+		) 
+	then
+		scoreHolder.addHardConstraintMatch(kcontext, -$penalty);
+end
+
+rule "Assign employee from same region"
+	when
+		$d : Duty(
+			employee != null,
+			!employeeIsInSameRegion,
+			$penalty : getDutyLengthInMinutes() * getPenalty()
+		)
+	then
+		scoreHolder.addMediumConstraintMatch(kcontext, -$penalty);
+end
+
+rule "Break between non-consecutive shifts is at least 12 hours"
+    when
+        $d : Duty(
+                employee != null,
+                $e : employee,
+                $leftEndDateTime : endDateTime)
+        Duty(
+                employee == $e,
+                $leftEndDateTime < startDateTime,
+                $leftEndDateTime.until(startDateTime, ChronoUnit.HOURS) < 12,
+                this != $d,
+                $rightStartDateTime: startDateTime)
+    then
+        long breakLength = $leftEndDateTime.until($rightStartDateTime, ChronoUnit.MINUTES);
+        scoreHolder.addMediumConstraintMatch(kcontext, -(720 - breakLength)*2);
+end
+
+rule "Monthly minutes must not exceed maximum monthly working hours"
+    when
+    	$employee : Employee(
+    		getMaxMonthlyWorkingHour() > 0,
+    		$getMaxMonthlyWorkingInMinutes : getMaxMonthlyWorkingInMinutes()
+    		)
+        $d : Duty(
+        	employee == $employee, 
+        	$startDateTime : startDateTime
+        	)
+        accumulate(
+            $other : Duty(
+                employee == $employee, 
+                $dutyStart : startDateTime,
+                $dutyEnd : endDateTime,
+                $dutyStart.getMonth() == $startDateTime.getMonth(),
+                $dutyStart.getYear() == $startDateTime.getYear(),
+                $totalDutyWorkingHourInMinutes : totalWorkingHourInMinutes()
+            ),
+            $dutyCount : count($other),
+            $totalMinutes : sum($totalDutyWorkingHourInMinutes)
+        )
+        Number(this > $getMaxMonthlyWorkingInMinutes) from $totalMinutes
+    then
+    	scoreHolder.addHardConstraintMatch(kcontext, (long) -($totalMinutes- $getMaxMonthlyWorkingInMinutes));
+        // scoreHolder.penalize(kcontext, (((long)$totalMinutes) - $contract.getMaximumMinutesPerMonth()) / $shiftCount);
+end
+
+rule "assign same duty on weekdays"
+	when
+		$d1 : Duty(
+        	employee != null,
+        	$employee : employee,
+        	$dutyName : name,
+        	$totalDutyWorkingHourInMinutes : totalWorkingHourInMinutes(),
+        	$dutyWeekOfYear : getDutyWeekOfYear()
+        	)
+        Duty(
+                employee != $employee,
+                name.equals($dutyName),
+                getDutyWeekOfYear() == $dutyWeekOfYear
+            )
+	then
+		scoreHolder.addSoftConstraintMatch(kcontext, -$totalDutyWorkingHourInMinutes);
+end
+
+rule "fair dutyName count"
+    when
+        $d : Duty(
+        	employee != null,
+        	$employee : employee,
+        	$dutyName : name,
+        	$totalDutyWorkingHourInMinutes : totalWorkingHourInMinutes()
+        	)
+        accumulate(
+            $other : Duty(
+                employee == $employee,
+                name.equals($dutyName)
+            ),
+            $dutyCount : count($other)
+        )
+        Number(this > 0) from $dutyCount
+    then
+    	if ($d.isWeekDay()) $dutyCount = $dutyCount / 5; //we are going to assign weekday duties to the same employees at the same week
+    	scoreHolder.addSoftConstraintMatch(kcontext, -$dutyCount);
+end
+
+rule "fair dutyType count"
+    when
+        $d : Duty(
+        	employee != null,
+        	$employee : employee,
+        	$dutyType : type,
+        	$getTotalWorkingHour : getTotalWorkingHour()
+        	)
+        accumulate(
+            $other : Duty(
+                employee == $employee,
+                type.equals($dutyType)
+            ),
+            $dutyCount : count($other)
+        )
+        Number(this > 0) from $dutyCount
+    then
+    	if ($d.isWeekDay()) $dutyCount = $dutyCount / 5; //we are going to assign weekday duties to the same employees at the same week
+    	scoreHolder.addSoftConstraintMatch(kcontext, -$dutyCount);
+end
+
+//penalizes second duty
+rule "Consecutive day duty types should be the same"
+	when
+		$d1 : Duty(
+			employee != null,
+			$employee : employee,
+			$startDate : getStartDate(),
+			$d1type : type,
+			$totalWorkingHourInMinutes : totalWorkingHourInMinutes()
+			)
+		$d2 : Duty(
+			employee == $employee,
+			getStartDate().minusDays(1).equals($startDate),
+			!type.equals($d1type)
+			)
+	then
+		scoreHolder.addSoftConstraintMatch(kcontext, -($totalWorkingHourInMinutes));
+end
+
+//penalizes second duty
+rule "Consecutive week duty types should NOT be EVENING"
+	when
+		$d1 : Duty(
+			employee != null,
+			$employee : employee,
+			$startDate : getStartDate(),
+			type.equals("A"), // A is AKŞAM in turkish, the evening
+			$d1type : type,
+			$totalWorkingHourInMinutes : totalWorkingHourInMinutes()
+			)
+		$d2 : Duty(
+			employee == $employee,
+			getStartDate().minusDays(7).equals($startDate),
+			type.equals($d1type)
+			)
+	then
+		scoreHolder.addMediumConstraintMatch(kcontext, -($totalWorkingHourInMinutes * $totalWorkingHourInMinutes));
+end
+
+//penalizes second duty
+rule "Consecutive week duty should NOT be the same NAME"
+	when
+		$d1 : Duty(
+			employee != null,
+			$employee : employee,
+			$startDate : getStartDate(),
+			$d1name : name,
+			$totalWorkingHourInMinutes : totalWorkingHourInMinutes()
+			)
+		$d2 : Duty(
+			employee == $employee,
+			getStartDate().minusDays(7).equals($startDate),
+			name.equals($d1name)
+			)
+	then
+		scoreHolder.addMediumConstraintMatch(kcontext, -($totalWorkingHourInMinutes));
+end
+
+// ############################################################################
+// CONSECUTIVE WORKING ASSIGNMENTS - START
+// ############################################################################
+
+rule "insertEmployeeConsecutiveAssignmentStart"
+        salience 2 // Do these rules first (optional, for performance)
+    when
+        $duty : Duty(
+            $employee : employee, employee != null,
+            $dutyDate : getStartDate()
+        )
+        // The first day has no working day before it
+        not Duty(employee == $employee, getStartDate() == ($duty.getStartDate().minusDays(1)))
+    then
+        insertLogical(new EmployeeConsecutiveAssignmentStart($employee, $duty));
+end
+
+rule "insertEmployeeConsecutiveAssignmentEnd"
+        salience 2 // Do these rules first (optional, for performance)
+    when
+        $duty : Duty(
+            $employee : employee, employee != null,
+            $dutyDate : getStartDate()
+        )
+        // The last day has no working day after it
+        not Duty(employee == $employee,  getStartDate() == ($duty.getStartDate().plusDays(1)))
+    then
+        insertLogical(new EmployeeConsecutiveAssignmentEnd($employee, $duty));
+end
+
+rule "insertEmployeeWorkSequence"
+        salience 1 // Do these rules first (optional, for performance)
+    when
+        EmployeeConsecutiveAssignmentStart(
+            $employee : employee,
+            $firstDayDate : getDutyDate()
+        )
+
+        EmployeeConsecutiveAssignmentEnd(
+            employee == $employee,
+            getDutyDate() >= $firstDayDate,
+            $lastDayDate : getDutyDate()
+        )
+
+        // There are no free days between the first and last day
+        not EmployeeConsecutiveAssignmentEnd(
+            employee == $employee,
+            !duty.getStartDate().isBefore($firstDayDate),
+            duty.getStartDate().isBefore($lastDayDate)
+        )
+    then
+        insertLogical(new EmployeeWorkSequence($employee, $firstDayDate, $lastDayDate));
+end
+
+// Maximum number of consecutive working days
+rule "maximumConsecutiveWorkingDays"
+    when
+        EmployeeWorkSequence(
+            dayLength > 6,
+            $dayLength : dayLength
+        )
+    then
+        scoreHolder.addHardConstraintMatch(kcontext, -$dayLength);
+end
+
+// ############################################################################
+// CONSECUTIVE WORKING ASSIGNMENTS - END
+// ############################################################################

@@ -1,5 +1,6 @@
 package com.cagrigurbuz.kayseriulasim.dutyassignment.domain;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
@@ -17,7 +18,7 @@ import org.optaplanner.core.api.domain.variable.PlanningVariable;
 
 @Entity
 @PlanningEntity(pinningFilter = DutySelectionFilter.class)
-public class Duty {
+public class Duty{
 	
 	@PlanningId
 	@Id
@@ -155,7 +156,7 @@ public class Duty {
 	}
 
 	public boolean employeeIsInSameRegion() {
-		return employee.getRegion() == getRegion();
+		return employee.getRegion().equals(region);
 	}
 	
 	public int getDutyLengthInMinutes() {
@@ -205,5 +206,17 @@ public class Duty {
 	
 	public boolean isNextWeekDuty(Duty duty) {
 		return duty.startDateTime.toLocalDate().plusDays(7).equals(this.getStartDateTime().toLocalDate());
+	}
+	
+	public int getDayOfWeekValue() {
+		return startDateTime.getDayOfWeek().getValue();
+	}
+	
+	public LocalDate getStartDate() {
+		return startDateTime.toLocalDate();
+	}
+	
+	public LocalDate getEndDate() {
+		return startDateTime.toLocalDate();
 	}
 }

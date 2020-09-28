@@ -7,6 +7,8 @@ import org.optaplanner.core.api.solver.SolverManager;
 import org.optaplanner.core.api.solver.SolverStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +42,7 @@ public class SolverController {
 
 	@ApiOperation("Solve for schedule")
 	@PostMapping("/solve")
-	public void solve(@RequestParam("scheduleStartDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate scheduleStartDate, @RequestParam("scheduleDayLength") int scheduleDayLength) {
+	public ResponseEntity<String> solve(@RequestParam("scheduleStartDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate scheduleStartDate, @RequestParam("scheduleDayLength") int scheduleDayLength) {
 		
 		Schedule schedule = getSchedule(scheduleId);
 		
@@ -55,15 +57,25 @@ public class SolverController {
 		
 		solverManager.solveAndListen(scheduleId, this::getSchedule, this::saveSchedule);
 		
+		return new ResponseEntity<>(
+				"Solver started and schedule set from " + schedule.getScheduleStartDate() +  " to " + schedule.getScheduleEndDate() + ".",HttpStatus.ACCEPTED);
 	}
 	
 	@ApiOperation("Terminate Solver")
 	@PostMapping("/terminate")
-	public void terminateSolver() {
+	public ResponseEntity<String> terminateSolver() {
 		if (solverManager.getSolverStatus(scheduleId) == SolverStatus.SOLVING_ACTIVE) {
+			
 			solverManager.terminateEarly(scheduleId);
+
+			return new ResponseEntity<>("Solver terminated", HttpStatus.OK);
+		}
+		else {
+			return new ResponseEntity<>("No running solver found!", HttpStatus.BAD_REQUEST);
 		}
 	}
+	
+
 	
 	
 	public Schedule getSchedule(Long id) {
