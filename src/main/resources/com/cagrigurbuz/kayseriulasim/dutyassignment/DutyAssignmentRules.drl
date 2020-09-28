@@ -1,5 +1,5 @@
 //created on: Sep 14, 2020
-package com.cagrigurbuz.kayseriulasim.dutyassignment.controller;
+package com.cagrigurbuz.kayseriulasim.dutyassignment;
 	dialect "java"
 
 //list any import classes here.
@@ -47,7 +47,7 @@ rule "One duty per day"
 			$penalty : getDutyLengthInMinutes()
 		) 
 	then
-		scoreHolder.addHardConstraintMatch(kcontext, -$penalty);
+		scoreHolder.addHardConstraintMatch(kcontext, -1);
 end
 
 rule "Assign employee from same region"
@@ -182,6 +182,7 @@ rule "Consecutive week duty should NOT be the same NAME" //at the weekend
 		scoreHolder.addMediumConstraintMatch(kcontext, -($totalWorkingHourInMinutes));
 end
 
+
 // ############################################################################
 // CONSECUTIVE WORKING ASSIGNMENTS - START
 // ############################################################################
@@ -238,6 +239,7 @@ end
 
 // Maximum number of consecutive working days
 rule "maximumConsecutiveWorkingDays"
+        salience 1 // Do these rules first (optional, for performance)
     when
         EmployeeWorkSequence(
             dayLength > 6,
