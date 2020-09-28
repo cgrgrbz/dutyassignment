@@ -239,7 +239,6 @@ end
 
 // Maximum number of consecutive working days
 rule "maximumConsecutiveWorkingDays"
-        salience 1 // Do these rules first (optional, for performance)
     when
         EmployeeWorkSequence(
             dayLength > 6,
