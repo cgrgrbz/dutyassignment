@@ -1,5 +1,7 @@
 # Duty Optimizer Web Service 
 
+[TÜRKÇE](https://github.com/cgrgrbz/dutyassignment/blob/master/OKUBENI.md)
+
 This is a duty assignment optimization web service, gets the input Duty and Employee lists by excel, and solves/assigns the employees to the duties starting from the given date by the give day length.
 
 It is a maven project, powered by spring boot. And OptaPlanner used for the optimization purposes. It also uses h2 in-memory database for testing purposes. 
