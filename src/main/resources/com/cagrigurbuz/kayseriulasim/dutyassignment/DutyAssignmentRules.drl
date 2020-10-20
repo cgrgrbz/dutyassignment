@@ -20,7 +20,6 @@ import com.cagrigurbuz.kayseriulasim.dutyassignment.solver.*;
 //declare any global variables here
 global HardMediumSoftLongScoreHolder scoreHolder;
 
-
 rule "Assign every duty"
     when
     	$d : Duty(
@@ -47,7 +46,7 @@ rule "One duty per day"
 			$penalty : getDutyLengthInMinutes()
 		) 
 	then
-		scoreHolder.addHardConstraintMatch(kcontext, -1);
+		scoreHolder.addHardConstraintMatch(kcontext, -1000);
 end
 
 rule "Assign employee from same region"
@@ -78,7 +77,6 @@ rule "Break between non-consecutive shifts is at least 12 hours"
         long breakLength = $leftEndDateTime.until($rightStartDateTime, ChronoUnit.MINUTES);
         scoreHolder.addMediumConstraintMatch(kcontext, -(breakLength*breakLength*breakLength));
 end
-
 
 rule "fair dutyName count"
     when
@@ -182,6 +180,10 @@ rule "Consecutive week duty should NOT be the same NAME" //at the weekend
 		scoreHolder.addMediumConstraintMatch(kcontext, -($totalWorkingHourInMinutes));
 end
 
+// ############################################################################
+// ############################################################################
+// ############################################################################
+// ############################################################################
 
 // ############################################################################
 // CONSECUTIVE WORKING ASSIGNMENTS - START
