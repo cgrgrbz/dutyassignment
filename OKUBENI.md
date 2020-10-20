@@ -36,7 +36,7 @@ Görev ve Personel için içeri atarken kullanabileceğiniz excel şablonların�
 | Personel | Görev(ler)e atanmak üzere bir personel. |
 | Plan | Tüm görevleri içerisinde barındıran bir plan. |
 
-Her görev üzerinde bir karar değişkeni, bir personel, bulunur ve özüm sırasında atama yapılır.
+Her görev üzerinde bir karar değişkeni, bir personel, bulunur ve çözüm sırasında atama yapılır.
 
 Bir plan, sadece bir adet, çözüm sırasında oluşturulur. Görev listesi, başlangıç ve bitiş tarihi bulunur.
 
