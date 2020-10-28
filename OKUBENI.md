@@ -42,6 +42,23 @@ Bir plan, sadece bir adet, çözüm sırasında oluşturulur. Görev listesi, ba
 
 A Schedule, only and only one, instantiated during the solving time. It has a list of duties, a startDate, and a endDate. 
  
+ 
+## Problem Kısıtları
+Drools kullanılarak - "resources\com\cagrigurbuz\kayseriulasim\dutyassignment\DutyAssignmentRules.drl" 
+
+|Kısıt|Tip|Açıklama|
+|--|--|--|
+|Tüm görevleri ata|Medium||
+|Aynı gün bir görev ata|Hard||
+|Aynı bölgeden personel ata|Medium||
+|Arka-arkaya yapılan iki atama arası en az 12 saat dinlenme|Medium||
+|Adil görevAdı dağılımı|Soft||
+|Adil görevTipi dağılımı|Soft||
+|Takip eden gün aynı görev tipi ataması|Soft||
+|Takip eden iki hafta Akşam görevi atama|Medium||
+|Takip eden iki hafta aynı görevi atama|Medium||
+|Arka arkaya dinlenmesiz en fazla 6 gün ata|Hard||
+ 
 
 ## Web Servis API Uç Noktaları
 
