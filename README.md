@@ -42,6 +42,23 @@ Each duty has an decision variable, an employee, to be assigned during the solvi
 
 A Schedule, only and only one, instantiated during the solving time. It has a list of duties, a startDate, and a endDate. 
  
+ 
+## Constraints of the problem
+Using Drools - "resources\com\cagrigurbuz\kayseriulasim\dutyassignment\DutyAssignmentRules.drl" 
+
+|Rule|Type|Description|
+|--|--|--|
+|Assign every duty|Medium||
+|One duty per day|Hard||
+|Assign employee from same region|Medium||
+|Break between non-consecutive shifts is at least 12 hours|Medium||
+|fair dutyName count|Soft||
+|fair dutyType count|Soft||
+|Consecutive day duty TYPE should be the same|Soft||
+|Consecutive week duty TYPE should NOT be EVENING|Medium||
+|Consecutive week duty should NOT be the same NAME|Medium||
+|Maximum Consecutive Six Assigned Days|Hard||
+
 
 ## Web Service API Endpoints
 
