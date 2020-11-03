@@ -13,16 +13,27 @@ Görev ve Personel için içeri atarken kullanabileceğiniz excel şablonların�
  ([EmployeeList Şablon](https://github.com/cgrgrbz/dutyassignment/blob/master/src/main/resources/EmployeeList.xlsx)) 
 
 **Proje yapısı (/src/main/java/com/cagrigurbuz/kayseriulasim/dutyassignment/):**
+
 .
+
 ├── controller                          				# Controllers
+
 ├── domain                              				# Domain POJOs for the problem
+
 ├── repository                          				# JPA Repositories
+
 ├── service                             				# Implementations for the controllers
+
 ├── solver                              				# Solver related POJOs
+
 ├── utils                               				# IO Utils for import/export
+
 ├── DataImporter.java                   			  # Data Importer during the PostConstruct
+
 ├── DutyAssignmentApplication.java      
+
 ├── SwaggerConf.java                    		    # SwaggerUI configurations
+
 └── README.md
 
 ## Problem Domain'i
