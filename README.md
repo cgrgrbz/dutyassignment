@@ -16,15 +16,25 @@ Excel templates for the Duty and Employee lists are linked below.
 
 **Project structure (/src/main/java/com/cagrigurbuz/kayseriulasim/dutyassignment/):**
 .
+
 ├── controller                          				# Controllers
+
 ├── domain                              				# Domain POJOs for the problem
+
 ├── repository                          				# JPA Repositories
+
 ├── service                             					# Implementations for the controllers
+
 ├── solver                              					# Solver related POJOs
+
 ├── utils                               					# IO Utils for import/export
+
 ├── DataImporter.java                   			# Data Importer during the PostConstruct
+
 ├── DutyAssignmentApplication.java      
+
 ├── SwaggerConf.java                    		# SwaggerUI configurations
+
 └── README.md
 
 ## Domain of the problem
