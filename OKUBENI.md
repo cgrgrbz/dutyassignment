@@ -101,10 +101,15 @@ Uygulamanın localhost:8080 üzerinde çalıştığını varsayarak,
 Uygulama varsayılan olarak 8080 portu üzerinde çalışır ve Swagger UI ve H2 konsolu açıktır.
 
 > **Projeyi IDEniz yardımıyla içeri aktarın ve çalıştırın**, veya maven komutlarını kullanarak konsol üzerinden,
+
 > **_Swagger UI_ API arayüzüne gidin, veya kendi yöntemlerinizle POST ve GET uç birimlerini kullanarak devam edin,
+
 > **Personel listesi excel dosyasını içeri aktarın _/employee/import_**
+
 > **Görev listesi excel dosyasını içeri aktarın _/duty/import_**
+
 >  **Çözücüye Başlangıç tarihi ve Plan Gün Uzunluğu parametreleri ile bir POST gönderin.**
+
 >  **Daha önceden belirlenen (15dk) süre sonunda çözücü sonlandırılır ve, determined on [application.properties](https://github.com/cgrgrbz/dutyassignment/blob/master/src/main/resources/application.properties), görev uç birimlerini kullanarak güncel veya tüm görev listesini GET ile çağırıp, yapılan atamaları alabilirsiniz.**
 
 Özel durumlarınızı/değişiklikleriniz için h2 veritabanını kullanabilirsiniz.
