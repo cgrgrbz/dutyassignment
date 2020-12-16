@@ -100,11 +100,17 @@ Assuming the application on localhost:8080
 By default applications comes with Swagger UI and H2 console enabled at 8080 port as mentioned above.
 
 > **Clone this repo and import it by your IDE and run it**, or you may run it by directly maven commands on console,
+
 > **Go to _Swagger UI_ to use the API with an easy way**, or use your own way to POST and GET the end points,
+
 > **Import your EmployeeList excel file _/employee/import_**
+
 > **Import your DutyList excel file _/duty/import_**
+
 >  **Request a post with two parameters, startingDate and dayLenght**
+
 >  **After the termination time spent, determined on [application.properties](https://github.com/cgrgrbz/dutyassignment/blob/master/src/main/resources/application.properties), you may use duty and points to get a list of all duties or only the current duty list by its enpoint.**
+
 
 You may also use H2-Console to query the domain for your special condition.
 
