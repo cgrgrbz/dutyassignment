@@ -112,7 +112,7 @@ Uygulama varsayılan olarak 8080 portu üzerinde çalışır ve Swagger UI ve H2
 
 >  **Daha önceden belirlenen (15dk) süre sonunda çözücü sonlandırılır ve, determined on [application.properties](https://github.com/cgrgrbz/dutyassignment/blob/master/src/main/resources/application.properties), görev uç birimlerini kullanarak güncel veya tüm görev listesini GET ile çağırıp, yapılan atamaları alabilirsiniz.**
 
-Özel durumlarınızı/değişiklikleriniz için h2 veritabanını kullanabilirsiniz.
+Özel durum sorgulamaları için için h2-console kullanabilirsiniz.
 
 **YAPILACAKLR**
 - 
